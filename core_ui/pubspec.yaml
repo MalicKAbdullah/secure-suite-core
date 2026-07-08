@@ -1,0 +1,19 @@
+name: core_ui
+description: Shared stateless widgets built on core_theme design tokens. No business logic.
+version: 0.0.1
+publish_to: none
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+  flutter: '>=3.19.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  core_theme:
+    path: ../core_theme
+
+dev_dependencies:
+  flutter_lints: ^3.0.0
+  flutter_test:
+    sdk: flutter
