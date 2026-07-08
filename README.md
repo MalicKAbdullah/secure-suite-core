@@ -25,6 +25,7 @@ This repository holds the five shared packages the Secure Suite apps are built o
 | 💊 **DoseWise** | Medication schedule & adherence tracker | [dosewise](https://github.com/MalicKAbdullah/dosewise) |
 | 📄 **Ledgerly** | Freelance invoices, payments & expenses | [ledgerly](https://github.com/MalicKAbdullah/ledgerly) |
 | 📓 **Reflect** | Encrypted journal with photos & mood analytics | [reflect](https://github.com/MalicKAbdullah/reflect) |
+| 🔒 **Latchly** | App lock — guard any app behind a PIN or fingerprint (Android) | [latchly](https://github.com/MalicKAbdullah/latchly) |
 | 🔐 **Vaultly** | Password manager with 2FA & autofill | [vaultly](https://github.com/MalicKAbdullah/vaultly) |
 
 ## 📦 Packages
