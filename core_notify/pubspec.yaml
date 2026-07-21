@@ -1,0 +1,25 @@
+name: core_notify
+description: >-
+  Shared local-notification layer for Secure Suite apps: tz-aware scheduling,
+  actionable notifications whose buttons reliably open the app (no fragile
+  background-isolate broadcasts), and a single tap/action callback. All
+  on-device; no network. State-management-agnostic.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+  flutter: '>=3.19.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  flutter_local_notifications: ^19.0.0
+  timezone: ^0.10.0
+  flutter_timezone: ^4.0.0
+
+dev_dependencies:
+  flutter_lints: ^3.0.0
+  flutter_test:
+    sdk: flutter

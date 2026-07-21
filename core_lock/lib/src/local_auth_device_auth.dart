@@ -12,9 +12,9 @@ final class LocalAuthDeviceAuth implements IDeviceAuth {
   @override
   Future<bool> canAuthenticate() async {
     try {
-      // isDeviceSupported covers the device-credential fallback (PIN/pattern)
-      // even when no biometrics are enrolled.
-      return await _auth.isDeviceSupported() || await _auth.canCheckBiometrics;
+      // Biometric-only: usable only when biometrics are actually enrolled.
+      if (!await _auth.canCheckBiometrics) return false;
+      return (await _auth.getAvailableBiometrics()).isNotEmpty;
     } catch (_) {
       return false;
     }
@@ -25,9 +25,12 @@ final class LocalAuthDeviceAuth implements IDeviceAuth {
     try {
       return await _auth.authenticate(
         localizedReason: reason,
-        // biometricOnly stays false so the OS offers the device credential
-        // (PIN/pattern/passcode) when biometrics are unavailable or fail.
-        options: const AuthenticationOptions(stickyAuth: true),
+        // biometricOnly: the app's own password is the fallback, never the
+        // device PIN/pattern.
+        options: const AuthenticationOptions(
+          stickyAuth: true,
+          biometricOnly: true,
+        ),
       );
     } catch (_) {
       return false;

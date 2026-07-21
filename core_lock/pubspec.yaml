@@ -1,9 +1,10 @@
 name: core_lock
 description: >-
-  Shared optional app-lock for Secure Suite apps: a device biometric /
-  credential gate with auto-lock on background. State-management-agnostic —
-  give it a LockController and wrap your app with AppLockGate.
-version: 0.1.0
+  Shared app-lock for Secure Suite apps: fingerprint-primary unlock with an
+  app-set password fallback (never the device PIN), and auto-lock on
+  background. State-management-agnostic — give it a LockController and wrap
+  your app with AppLockGate.
+version: 0.2.0
 publish_to: none
 
 environment:
@@ -13,6 +14,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  core_crypto:
+    path: ../core_crypto
   core_storage:
     path: ../core_storage
   core_theme:

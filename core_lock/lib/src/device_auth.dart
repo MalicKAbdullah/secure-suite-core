@@ -1,11 +1,14 @@
-/// Abstraction over the platform authentication prompt (biometrics or device
-/// credential) so lock logic is testable without platform channels.
+/// Abstraction over the platform **biometric** prompt (fingerprint / face) so
+/// lock logic is testable without platform channels.
+///
+/// Biometric-only by design: the Secure Suite lock never falls back to the
+/// device PIN/pattern. The in-app password (see [IPasswordHasher]) is the only
+/// fallback, so unlocking never depends on the phone's own screen lock.
 abstract interface class IDeviceAuth {
-  /// Whether the device can show an authentication prompt at all (biometrics
-  /// enrolled, or a device credential set up as fallback).
+  /// Whether the device has usable enrolled biometrics right now.
   Future<bool> canAuthenticate();
 
-  /// Shows the prompt. Returns true when the user authenticated.
+  /// Shows the biometric prompt. Returns true when it succeeds.
   Future<bool> authenticate({required String reason});
 }
 
