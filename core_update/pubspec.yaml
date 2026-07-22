@@ -1,0 +1,30 @@
+name: core_update
+description: >-
+  Shared in-app update check for sideloaded Secure Suite apps: on open it asks
+  the app's GitHub repo for the latest release, and if newer surfaces a clean,
+  dismissable card. Tapping Update opens the APK download so Android's own
+  installer takes over — no install permission, no silent self-update. The only
+  network call is the release check; nothing is uploaded.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+  flutter: '>=3.19.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  core_theme:
+    path: ../core_theme
+  core_ui:
+    path: ../core_ui
+
+  http: ^1.2.0
+  url_launcher: ^6.2.0
+  package_info_plus: ^8.0.0
+
+dev_dependencies:
+  flutter_lints: ^3.0.0
+  flutter_test:
+    sdk: flutter
