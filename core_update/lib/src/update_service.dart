@@ -1,7 +1,10 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:http/http.dart' as http;
+import 'package:open_filex/open_filex.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// A newer release available for the app.
@@ -32,7 +35,9 @@ abstract interface class IUpdateService {
   /// build, else null (up to date, offline, or no APK asset).
   Future<UpdateInfo?> check();
 
-  /// Opens the APK download in the browser so Android installs it.
+  /// Downloads the release APK and hands it to Android's package installer
+  /// (the system shows the install prompt). Returns whether the installer was
+  /// launched. Requires the app to hold REQUEST_INSTALL_PACKAGES.
   Future<bool> openDownload(UpdateInfo info);
 }
 
@@ -87,9 +92,34 @@ final class GithubUpdateService implements IUpdateService {
   }
 
   @override
-  Future<bool> openDownload(UpdateInfo info) {
+  Future<bool> openDownload(UpdateInfo info) async {
+    // Download the APK to app storage, then hand it to the package installer.
+    if (info.downloadUrl.isEmpty) return _launchReleasePage(info);
+    try {
+      final resp = await _client.get(Uri.parse(info.downloadUrl));
+      if (resp.statusCode != 200 || resp.bodyBytes.isEmpty) {
+        return _launchReleasePage(info);
+      }
+      final dir = await getApplicationSupportDirectory();
+      final file = File('${dir.path}/update-${info.version}.apk');
+      await file.writeAsBytes(resp.bodyBytes, flush: true);
+      final result = await OpenFilex.open(
+        file.path,
+        type: 'application/vnd.android.package-archive',
+      );
+      // If the OS couldn't open the APK, fall back to the browser download.
+      if (result.type != ResultType.done) return _launchReleasePage(info);
+      return true;
+    } catch (_) {
+      return _launchReleasePage(info);
+    }
+  }
+
+  /// Fallback: open the release page / APK URL in the browser.
+  Future<bool> _launchReleasePage(UpdateInfo info) {
     final url =
         info.downloadUrl.isNotEmpty ? info.downloadUrl : info.releaseUrl;
+    if (url.isEmpty) return Future.value(false);
     return launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
   }
 

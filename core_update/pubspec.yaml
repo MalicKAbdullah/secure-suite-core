@@ -1,11 +1,11 @@
 name: core_update
 description: >-
-  Shared in-app update check for sideloaded Secure Suite apps: on open it asks
-  the app's GitHub repo for the latest release, and if newer surfaces a clean,
-  dismissable card. Tapping Update opens the APK download so Android's own
-  installer takes over — no install permission, no silent self-update. The only
-  network call is the release check; nothing is uploaded.
-version: 0.1.0
+  Shared in-app update for sideloaded Secure Suite apps: on open it asks the
+  app's GitHub repo for the latest release, and if newer surfaces a clean,
+  dismissable card. "Update now" downloads the APK and hands it to Android's
+  package installer (needs REQUEST_INSTALL_PACKAGES). The only network calls
+  are the release check and the APK download; nothing is uploaded.
+version: 0.2.0
 publish_to: none
 
 environment:
@@ -23,6 +23,8 @@ dependencies:
   http: ^1.2.0
   url_launcher: ^6.2.0
   package_info_plus: ^8.0.0
+  path_provider: ^2.1.0
+  open_filex: ^4.5.0
 
 dev_dependencies:
   flutter_lints: ^3.0.0
