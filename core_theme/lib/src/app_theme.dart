@@ -33,12 +33,28 @@ abstract final class AppTheme {
       onPrimaryContainer: textPrimary,
       secondary: textPrimary,
       onSecondary: surface,
+      // Explicitly set every container/tertiary role below — the raw
+      // ColorScheme() constructor silently falls back to secondary/primary
+      // for any role left unset (e.g. secondaryContainer defaults to
+      // `secondary`, which is `textPrimary` here). Leaving them unset made
+      // widgets that read colorScheme.secondaryContainer as a background
+      // (Card, ListTile) render text in the exact same color as their own
+      // background — invisible text on an invisible-seeming "white box".
+      secondaryContainer: AppColors.surfaceAlt(brightness),
+      onSecondaryContainer: textPrimary,
+      tertiary: accentColor,
+      onTertiary: accent.onAccent(brightness),
+      tertiaryContainer: accent.container(brightness),
+      onTertiaryContainer: textPrimary,
       surface: surface,
       onSurface: textPrimary,
       surfaceContainerHighest: AppColors.surfaceAlt(brightness),
       onSurfaceVariant: textSecondary,
       error: AppColors.error(brightness),
       onError: isDark ? AppColors.gray950 : AppColors.white,
+      errorContainer:
+          isDark ? AppColors.errorContainerDark : AppColors.errorContainerLight,
+      onErrorContainer: textPrimary,
       outline: border,
       outlineVariant: border,
       shadow: Colors.black,
