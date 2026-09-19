@@ -17,12 +17,18 @@ class AutoBackupSection extends StatefulWidget {
             'folder when one is due. Pick a Google Drive folder to keep backups '
             'synced to your Drive.',
     this.minPassphraseLength = 8,
+    this.onRevealGate,
   });
 
   final AutoBackupService service;
   final BackupProducer producer;
   final String description;
   final int minPassphraseLength;
+
+  /// Asked to confirm the viewer's identity before the stored passphrase is
+  /// shown. Apps wire this to their biometric / app-lock check. When null the
+  /// reveal is still behind an explicit confirmation step.
+  final Future<bool> Function()? onRevealGate;
 
   @override
   State<AutoBackupSection> createState() => _AutoBackupSectionState();
@@ -74,6 +80,62 @@ class _AutoBackupSectionState extends State<AutoBackupSection> {
       await _service.setPassphrase(passphrase);
       await _reload();
     }
+  }
+
+  /// Opens the passphrase tile: reveal what is stored, or replace it. Reveal is
+  /// offered only when one is actually set.
+  Future<void> _openPassphrase(bool hasPassphrase) async {
+    final action = await showModalBottomSheet<_PassphraseAction>(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (hasPassphrase)
+              ListTile(
+                leading: const Icon(Icons.visibility_outlined),
+                title: const Text('Reveal passphrase'),
+                subtitle: const Text('Show the passphrase this app stores'),
+                onTap: () =>
+                    Navigator.pop(sheetContext, _PassphraseAction.reveal),
+              ),
+            ListTile(
+              leading: const Icon(Icons.edit_outlined),
+              title: Text(
+                hasPassphrase ? 'Change passphrase' : 'Set passphrase',
+              ),
+              subtitle: const Text('Only affects backups written from now on'),
+              onTap: () =>
+                  Navigator.pop(sheetContext, _PassphraseAction.change),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (action == null || !mounted) return;
+    switch (action) {
+      case _PassphraseAction.change:
+        await _editPassphrase();
+      case _PassphraseAction.reveal:
+        await _revealPassphrase();
+    }
+  }
+
+  Future<void> _revealPassphrase() async {
+    final gate = widget.onRevealGate;
+    if (gate != null && !await gate()) return;
+    final passphrase = await _service.readPassphrase();
+    if (!mounted) return;
+    if (passphrase == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No passphrase is stored.')),
+      );
+      return;
+    }
+    await showDialog<void>(
+      context: context,
+      builder: (_) => _RevealedPassphraseDialog(passphrase: passphrase),
+    );
   }
 
   Future<void> _backupNow() async {
@@ -150,9 +212,13 @@ class _AutoBackupSectionState extends State<AutoBackupSection> {
             ListTile(
               leading: const Icon(Icons.key_outlined),
               title: const Text('Backup passphrase'),
-              subtitle: Text(config.hasPassphrase ? 'Set' : 'Not set'),
+              subtitle: Text(
+                config.hasPassphrase
+                    ? 'Set · tap to reveal or change'
+                    : 'Not set',
+              ),
               trailing: const Icon(Icons.chevron_right),
-              onTap: _editPassphrase,
+              onTap: () => _openPassphrase(config.hasPassphrase),
             ),
           ListTile(
             leading: Icon(
@@ -197,6 +263,59 @@ class _AutoBackupSectionState extends State<AutoBackupSection> {
             ),
           ),
         ],
+      ],
+    );
+  }
+}
+
+enum _PassphraseAction { reveal, change }
+
+/// Shows the stored passphrase so an owner who no longer remembers it can
+/// restore an existing backup. Selectable rather than copied to the clipboard:
+/// the clipboard is readable by other apps and survives leaving the screen.
+class _RevealedPassphraseDialog extends StatelessWidget {
+  const _RevealedPassphraseDialog({required this.passphrase});
+
+  final String passphrase;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return AlertDialog(
+      title: const Text('Backup passphrase'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              color: scheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(AppSpacing.sm),
+            ),
+            child: SelectableText(
+              passphrase,
+              style: const TextStyle(
+                fontFamily: 'monospace',
+                fontSize: 16,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Text(
+            'This unlocks every backup written while it was set. Backups made '
+            'with an older passphrase still need that older one.',
+            style:
+                AppTextStyles.caption.copyWith(color: scheme.onSurfaceVariant),
+          ),
+        ],
+      ),
+      actions: [
+        FilledButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Done'),
+        ),
       ],
     );
   }

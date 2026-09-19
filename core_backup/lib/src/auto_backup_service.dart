@@ -122,6 +122,15 @@ final class AutoBackupService {
   Future<void> setPassphrase(String passphrase) =>
       _storage.write(key: _kPassphrase, value: passphrase);
 
+  /// The stored backup passphrase, or null when none is set.
+  ///
+  /// Backup files are encrypted under a key derived from the passphrase alone,
+  /// with no escrow and no recovery key — so an owner who forgets it can never
+  /// open an existing backup. This app already holds the passphrase in order
+  /// to write scheduled backups; exposing it is what makes those backups
+  /// restorable.
+  Future<String?> readPassphrase() => _storage.read(key: _kPassphrase);
+
   /// Opens the system folder picker and stores the selection. Returns false
   /// when the user cancels.
   Future<bool> pickFolder() async {

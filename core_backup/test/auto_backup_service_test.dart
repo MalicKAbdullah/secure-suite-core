@@ -100,4 +100,17 @@ void main() {
     expect(result, isA<BackupFailed>());
     expect((await service.loadConfig()).lastError, isNotNull);
   });
+
+  test('readPassphrase returns null until one is set, then the stored one',
+      () async {
+    expect(await service.readPassphrase(), isNull);
+    await service.setPassphrase('correct horse battery');
+    expect(await service.readPassphrase(), 'correct horse battery');
+  });
+
+  test('readPassphrase reflects a replacement', () async {
+    await service.setPassphrase('first one here');
+    await service.setPassphrase('second one here');
+    expect(await service.readPassphrase(), 'second one here');
+  });
 }
