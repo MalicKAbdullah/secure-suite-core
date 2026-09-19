@@ -1,10 +1,14 @@
 import 'package:core_theme/core_theme.dart';
+import 'package:core_ui/src/widgets/value_text.dart';
 import 'package:flutter/material.dart';
 
 /// A compact metric: a small label above a big tabular-figure value, with an
 /// optional caption underneath. Left-aligned so several tiles line up in a
 /// row and their digits sit in true columns (the number styles use tabular
 /// figures). Use for dashboards and stat rows.
+///
+/// The value shrinks to fit its column instead of being ellipsized, so a row
+/// of tiles stays readable at large amounts.
 final class StatTile extends StatelessWidget {
   const StatTile({
     required this.label,
@@ -45,11 +49,10 @@ final class StatTile extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 4),
-        Text(
+        ValueText(
           value,
-          style: AppTextStyles.numberLarge.copyWith(color: valueColor),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
+          style: AppTextStyles.numberLarge,
+          color: valueColor,
         ),
         if (caption != null) ...[
           const SizedBox(height: 2),
