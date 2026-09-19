@@ -2,10 +2,19 @@ import 'package:core_theme/core_theme.dart';
 import 'package:core_ui/src/widgets/value_text.dart';
 import 'package:flutter/material.dart';
 
-/// A compact metric: a small label above a big tabular-figure value, with an
-/// optional caption underneath. Left-aligned so several tiles line up in a
-/// row and their digits sit in true columns (the number styles use tabular
-/// figures). Use for dashboards and stat rows.
+/// How loud a [StatTile]'s number is.
+enum StatTileSize {
+  /// The default. Sized for two or three tiles sitting side by side, where a
+  /// display-size number would dominate the screen and crowd its neighbours.
+  compact,
+
+  /// A single number that is the whole point of its card.
+  hero,
+}
+
+/// A metric: a small label above a tabular-figure value, with an optional
+/// caption underneath. Left-aligned so several tiles line up in a row and
+/// their digits sit in true columns (the number styles use tabular figures).
 ///
 /// The value shrinks to fit its column instead of being ellipsized, so a row
 /// of tiles stays readable at large amounts.
@@ -16,6 +25,7 @@ final class StatTile extends StatelessWidget {
     this.caption,
     this.valueColor,
     this.icon,
+    this.size = StatTileSize.compact,
     super.key,
   });
 
@@ -24,6 +34,7 @@ final class StatTile extends StatelessWidget {
   final String? caption;
   final Color? valueColor;
   final IconData? icon;
+  final StatTileSize size;
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +62,10 @@ final class StatTile extends StatelessWidget {
         const SizedBox(height: 4),
         ValueText(
           value,
-          style: AppTextStyles.numberLarge,
+          style: switch (size) {
+            StatTileSize.compact => AppTextStyles.number,
+            StatTileSize.hero => AppTextStyles.numberLarge,
+          },
           color: valueColor,
         ),
         if (caption != null) ...[
