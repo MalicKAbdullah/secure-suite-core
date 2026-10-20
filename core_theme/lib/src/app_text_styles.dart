@@ -32,9 +32,9 @@ abstract final class AppTextStyles {
 
   static const TextStyle hero = TextStyle(
     fontFamily: displayFamily,
-    fontSize: 48,
+    fontSize: 56,
     fontWeight: FontWeight.w500,
-    letterSpacing: -1.6,
+    letterSpacing: -2.0,
     height: 1.02,
     fontFeatures: _tnum,
   );

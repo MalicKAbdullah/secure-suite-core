@@ -1,4 +1,5 @@
 import 'package:core_theme/src/app_colors.dart';
+import 'package:core_theme/src/app_field_border.dart';
 import 'package:core_theme/src/app_spacing.dart';
 import 'package:core_theme/src/app_text_styles.dart';
 import 'package:core_theme/src/suite_colors.dart';
@@ -96,7 +97,7 @@ abstract final class AppTheme {
         WidgetStateProperty.resolveWith(
           (s) => s.contains(WidgetState.selected) ? on : off,
         );
-    OutlineInputBorder field(Color c, [double w = 1]) => OutlineInputBorder(
+    AppFieldBorder field(Color c, [double w = 1]) => AppFieldBorder(
           borderRadius: radius,
           borderSide: BorderSide(color: c, width: w),
         );
@@ -377,7 +378,10 @@ abstract final class AppTheme {
         insetPadding: const EdgeInsets.all(AppSpacing.md),
       ),
       switchTheme: SwitchThemeData(
-        thumbColor: sel(onAccent, isDark ? AppColors.gray400 : AppColors.white),
+        thumbColor: sel(
+          AppColors.white,
+          isDark ? AppColors.gray400 : AppColors.white,
+        ),
         trackColor:
             sel(accentColor, isDark ? AppColors.gray700 : AppColors.gray300),
         trackOutlineColor: const WidgetStatePropertyAll(Colors.transparent),
@@ -399,7 +403,11 @@ abstract final class AppTheme {
         thumbColor: accentColor,
         overlayColor: accentColor.withValues(alpha: 0.10),
         trackHeight: 6,
-        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 11),
+        thumbShape: const RoundSliderThumbShape(
+          enabledThumbRadius: 11,
+          elevation: 0,
+          pressedElevation: 0,
+        ),
         valueIndicatorColor: scheme.inverseSurface,
         valueIndicatorTextStyle: AppTextStyles.numberSmall.copyWith(
           color: scheme.onInverseSurface,
