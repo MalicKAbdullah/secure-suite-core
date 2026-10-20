@@ -23,7 +23,10 @@ final class EncryptedPayload {
   final Uint8List salt;
 
   Uint8List toBytes() {
-    return Uint8List.fromList([...salt, ...nonce, ...ciphertext]);
+    return Uint8List(salt.length + nonce.length + ciphertext.length)
+      ..setAll(0, salt)
+      ..setAll(salt.length, nonce)
+      ..setAll(salt.length + nonce.length, ciphertext);
   }
 }
 

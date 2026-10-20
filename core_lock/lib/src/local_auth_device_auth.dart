@@ -30,6 +30,10 @@ final class LocalAuthDeviceAuth implements IDeviceAuth {
         options: const AuthenticationOptions(
           stickyAuth: true,
           biometricOnly: true,
+          // Opening the app is not a sensitive transaction: without this,
+          // Android makes face unlock wait for an extra "Confirm" tap after
+          // the face already matched.
+          sensitiveTransaction: false,
         ),
       );
     } catch (_) {
