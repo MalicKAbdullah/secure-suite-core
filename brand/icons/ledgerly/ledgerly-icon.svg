@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108" width="1080" height="1080">
+  <title>Ledgerly</title>
+  <rect width="108" height="108" fill="#4A4FE0"/>
+  <g transform="translate(32 32) scale(1.833)">
+    <path d="M7.5 2.5 L16.5 2.5 A3 3 0 0 1 19.5 5.5 L19.5 18.5 A3 3 0 0 1 16.5 21.5 L7.5 21.5 A3 3 0 0 1 4.5 18.5 L4.5 5.5 A3 3 0 0 1 7.5 2.5 Z" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M8.5 8 L15.5 8" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M8.5 12 L15.5 12" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M8.5 16.5 L11.5 16.5" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M13.5 16.5 A2 2 0 1 1 17.5 16.5 A2 2 0 1 1 13.5 16.5 Z" fill="#FFFFFF"/>
+  </g>
+</svg>

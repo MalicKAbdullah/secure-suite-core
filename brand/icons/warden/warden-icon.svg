@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108" width="1080" height="1080">
+  <title>Warden</title>
+  <rect width="108" height="108" fill="#457A0C"/>
+  <g transform="translate(32 32) scale(1.833)">
+    <path d="M12 2.75 L19.25 5.5 L19.25 11.25 C19.25 15.9 16.2 19.55 12 21.25 C7.8 19.55 4.75 15.9 4.75 11.25 L4.75 5.5 Z" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M8.75 9.5 L15.25 9.5" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M10.25 13 L13.75 13" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M10.25 16.75 A1.75 1.75 0 1 1 13.75 16.75 A1.75 1.75 0 1 1 10.25 16.75 Z" fill="#FFFFFF"/>
+  </g>
+</svg>
