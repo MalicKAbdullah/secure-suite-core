@@ -14,7 +14,7 @@ enum StatTileSize {
 
 /// A metric: a small label above a tabular-figure value, with an optional
 /// caption underneath. Left-aligned so several tiles line up in a row and
-/// their digits sit in true columns (the number styles use tabular figures).
+/// their digits sit in true columns.
 ///
 /// The value shrinks to fit its column instead of being ellipsized, so a row
 /// of tiles stays readable at large amounts.
@@ -26,6 +26,7 @@ final class StatTile extends StatelessWidget {
     this.valueColor,
     this.icon,
     this.size = StatTileSize.compact,
+    this.dotColor,
     super.key,
   });
 
@@ -36,43 +37,56 @@ final class StatTile extends StatelessWidget {
   final IconData? icon;
   final StatTileSize size;
 
+  /// A small legend dot before the label, tying the tile to a chart series.
+  final Color? dotColor;
+
   @override
   Widget build(BuildContext context) {
-    final subtle = Theme.of(context).colorScheme.onSurfaceVariant;
+    final c = SuiteColors.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
         Row(
           children: [
-            if (icon != null) ...[
-              Icon(icon, size: 16, color: subtle),
+            if (dotColor != null) ...[
+              Container(
+                width: 7,
+                height: 7,
+                decoration: BoxDecoration(
+                  color: dotColor,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 6),
+            ] else if (icon != null) ...[
+              Icon(icon, size: 15, color: c.textSecondary),
               const SizedBox(width: 6),
             ],
             Flexible(
               child: Text(
                 label,
-                style: AppTextStyles.caption.copyWith(color: subtle),
+                style: AppTextStyles.caption.copyWith(color: c.textSecondary),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: size == StatTileSize.hero ? 8 : 5),
         ValueText(
           value,
           style: switch (size) {
             StatTileSize.compact => AppTextStyles.number,
             StatTileSize.hero => AppTextStyles.numberLarge,
           },
-          color: valueColor,
+          color: valueColor ?? c.textPrimary,
         ),
         if (caption != null) ...[
-          const SizedBox(height: 2),
+          const SizedBox(height: 3),
           Text(
             caption!,
-            style: AppTextStyles.caption.copyWith(color: subtle),
+            style: AppTextStyles.caption.copyWith(color: c.textTertiary),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
