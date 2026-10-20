@@ -1,3 +1,8 @@
+// SecretWrapper runs real Argon2id (64 MiB, 3 passes) per wrap and unwrap;
+// shared CI runners need well over the default 30 s for a few of them.
+@Timeout(Duration(minutes: 5))
+library;
+
 import 'dart:math';
 import 'dart:typed_data';
 
