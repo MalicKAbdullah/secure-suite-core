@@ -325,11 +325,15 @@ final class SegmentedBar extends StatelessWidget {
     final total = values.fold<double>(0, (a, b) => a + b);
     return ClipRRect(
       borderRadius: BorderRadius.circular(height),
+      // Childless ColoredBoxes size to their minimum, so the bar fills its
+      // width and the segments stretch to its height.
       child: SizedBox(
+        width: double.infinity,
         height: height,
         child: total <= 0
             ? ColoredBox(color: c.surfaceAlt)
             : Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   for (var i = 0; i < values.length; i++)
                     if (values[i] > 0)
