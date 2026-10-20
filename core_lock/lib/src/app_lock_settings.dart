@@ -3,6 +3,7 @@ import 'package:core_lock/src/lock_attempt.dart';
 import 'package:core_lock/src/lock_controller.dart';
 import 'package:core_lock/src/recovery_key_view.dart';
 import 'package:core_theme/core_theme.dart';
+import 'package:core_ui/core_ui.dart';
 import 'package:flutter/material.dart';
 
 /// Drop-in Settings section for the app lock — identical across every Secure
@@ -189,61 +190,56 @@ class _AppLockSettingsState extends State<AppLockSettings> {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Column(
-        children: [
-          SwitchListTile(
-            secondary: const Icon(Icons.lock_outline),
-            title: const Text('Require a password to open'),
-            subtitle: Text(
-              _c.isEnabled
-                  ? 'Unlock with your fingerprint or password'
-                  : 'Protect ${_c.appName} with a password you set',
-            ),
+    return RowGroup(
+      children: [
+        SettingsTile(
+          icon: Icons.lock_outline_rounded,
+          title: 'Require a password to open',
+          subtitle: _c.isEnabled
+              ? 'Unlock with your fingerprint or password'
+              : 'Protect ${_c.appName} with a password you set',
+          trailing: Switch(
             value: _c.isEnabled,
             onChanged: (v) => v ? _turnOn() : _turnOff(),
           ),
-          if (_c.isEnabled) ...[
-            const Divider(height: 1),
-            SwitchListTile(
-              secondary: const Icon(Icons.fingerprint),
-              title: const Text('Use fingerprint'),
-              subtitle: Text(
-                _biometricAvailable
-                    ? 'Unlock with a fingerprint instead of typing'
-                    : 'Add a fingerprint on your device to enable this',
-              ),
+          onTap: () => _c.isEnabled ? _turnOff() : _turnOn(),
+        ),
+        if (_c.isEnabled) ...[
+          SettingsTile(
+            icon: Icons.fingerprint_rounded,
+            title: 'Use fingerprint',
+            subtitle: _biometricAvailable
+                ? 'Unlock with a fingerprint instead of typing'
+                : 'Add a fingerprint on your device to enable this',
+            trailing: Switch(
               value: _c.biometricEnabled,
               onChanged:
                   _biometricAvailable ? (v) => _c.setBiometricEnabled(v) : null,
             ),
-            const Divider(height: 1),
-            ListTile(
-              leading: const Icon(Icons.password_outlined),
-              title: const Text('Change password'),
-              subtitle: _c.canChangePasswordWithBiometric
-                  ? const Text('Confirm with your fingerprint')
-                  : null,
-              trailing: const Icon(Icons.chevron_right),
-              onTap: _changePassword,
-            ),
-            const Divider(height: 1),
-            ListTile(
-              leading: const Icon(Icons.key_outlined),
-              title: const Text('Recovery key'),
-              subtitle: Text(
-                switch (_hasRecoveryKey) {
-                  true => 'Set · create a new one if you lost it',
-                  false => 'Not set · needed if you forget your password',
-                  null => '',
-                },
-              ),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: _recoveryKey,
-            ),
-          ],
+            onTap: _biometricAvailable
+                ? () => _c.setBiometricEnabled(!_c.biometricEnabled)
+                : null,
+          ),
+          SettingsTile(
+            icon: Icons.password_rounded,
+            title: 'Change password',
+            subtitle: _c.canChangePasswordWithBiometric
+                ? 'Confirm with your fingerprint'
+                : null,
+            onTap: _changePassword,
+          ),
+          SettingsTile(
+            icon: Icons.key_rounded,
+            title: 'Recovery key',
+            subtitle: switch (_hasRecoveryKey) {
+              true => 'Set · create a new one if you lost it',
+              false => 'Not set · needed if you forget your password',
+              null => null,
+            },
+            onTap: _recoveryKey,
+          ),
         ],
-      ),
+      ],
     );
   }
 }
