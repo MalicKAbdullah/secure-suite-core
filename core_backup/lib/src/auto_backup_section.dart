@@ -1,6 +1,7 @@
 import 'package:core_backup/src/auto_backup_policy.dart';
 import 'package:core_backup/src/auto_backup_service.dart';
 import 'package:core_theme/core_theme.dart';
+import 'package:core_ui/core_ui.dart';
 import 'package:flutter/material.dart';
 
 /// Drop-in Settings block for scheduled encrypted backups, shared across apps
@@ -187,13 +188,13 @@ class _AutoBackupSectionState extends State<AutoBackupSection> {
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-          child: SegmentedButton<BackupInterval>(
+          child: AppSegmentedControl<BackupInterval>(
             segments: [
               for (final interval in BackupInterval.values)
-                ButtonSegment(value: interval, label: Text(interval.label)),
+                AppSegment(value: interval, label: interval.label),
             ],
-            selected: {config.interval},
-            onSelectionChanged: (s) => _setInterval(s.first),
+            selected: config.interval,
+            onChanged: _setInterval,
           ),
         ),
         if (enabled) ...[
