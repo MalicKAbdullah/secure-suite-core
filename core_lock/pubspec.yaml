@@ -20,6 +20,8 @@ dependencies:
     path: ../core_storage
   core_theme:
     path: ../core_theme
+  core_ui:
+    path: ../core_ui
 
   local_auth: ^2.3.0
 
