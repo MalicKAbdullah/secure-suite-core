@@ -4,7 +4,7 @@ description: >-
   app-set password fallback (never the device PIN), and auto-lock on
   background. State-management-agnostic — give it a LockController and wrap
   your app with AppLockGate.
-version: 0.2.0
+version: 0.3.0
 publish_to: none
 
 environment:
