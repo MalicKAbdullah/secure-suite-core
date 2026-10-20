@@ -26,10 +26,12 @@ final class CipherService {
       nonce: nonce,
     );
 
+    final body = secretBox.cipherText;
+    final tag = secretBox.mac.bytes;
     return EncryptedPayload(
-      ciphertext: Uint8List.fromList(
-        secretBox.cipherText + secretBox.mac.bytes,
-      ),
+      ciphertext: Uint8List(body.length + tag.length)
+        ..setAll(0, body)
+        ..setAll(body.length, tag),
       nonce: Uint8List.fromList(nonce),
       salt: salt,
     );
