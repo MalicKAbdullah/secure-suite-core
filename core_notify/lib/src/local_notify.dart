@@ -1,3 +1,5 @@
+import 'dart:ui' show Color;
+
 import 'package:core_notify/src/notify.dart';
 import 'package:core_notify/src/notify_models.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -12,12 +14,27 @@ import 'package:timezone/timezone.dart' as tz;
 /// the first frame. Every other call waits for that setup to finish, so a
 /// provider may use this instance as soon as it exists.
 ///
+/// Android styling: [smallIcon] names the app's status-bar drawable (a
+/// white-on-transparent vector, e.g. `ic_stat_notify` from the brand kit;
+/// the launcher icon renders as a white square there), and [accentColor]
+/// tints that icon and the app name in the shade (pass the app's light
+/// `AppAccents` colour).
+///
 /// Never construct in tests — it talks to platform channels.
 final class LocalNotify implements INotify {
-  LocalNotify({FlutterLocalNotificationsPlugin? plugin})
-      : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
+  LocalNotify({
+    FlutterLocalNotificationsPlugin? plugin,
+    this.smallIcon = '@mipmap/ic_launcher',
+    this.accentColor,
+  }) : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
 
   final FlutterLocalNotificationsPlugin _plugin;
+
+  /// Android drawable resource name for the status-bar icon.
+  final String smallIcon;
+
+  /// Android notification colour.
+  final Color? accentColor;
   final Map<String, NotifyChannel> _channels = {};
   Future<void>? _setup;
 
@@ -56,7 +73,7 @@ final class LocalNotify implements INotify {
     }
 
     final settings = InitializationSettings(
-      android: const AndroidInitializationSettings('@mipmap/ic_launcher'),
+      android: AndroidInitializationSettings(smallIcon),
       iOS: DarwinInitializationSettings(
         requestAlertPermission: false,
         requestBadgePermission: false,
@@ -192,6 +209,8 @@ final class LocalNotify implements INotify {
         channelId,
         c?.name ?? channelId,
         channelDescription: c?.description,
+        icon: smallIcon,
+        color: accentColor,
         importance:
             _androidImportance(c?.importance ?? NotifyImportance.normal),
         priority:
