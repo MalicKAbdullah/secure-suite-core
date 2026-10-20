@@ -7,6 +7,11 @@ import 'package:timezone/timezone.dart' as tz;
 
 /// flutter_local_notifications-backed [INotify].
 ///
+/// [initialize] does platform work (timezone lookup, plugin setup, channel
+/// creation), so apps start it after `runApp` rather than awaiting it before
+/// the first frame. Every other call waits for that setup to finish, so a
+/// provider may use this instance as soon as it exists.
+///
 /// Never construct in tests — it talks to platform channels.
 final class LocalNotify implements INotify {
   LocalNotify({FlutterLocalNotificationsPlugin? plugin})
@@ -14,12 +19,29 @@ final class LocalNotify implements INotify {
 
   final FlutterLocalNotificationsPlugin _plugin;
   final Map<String, NotifyChannel> _channels = {};
+  Future<void>? _setup;
+
+  /// Completes once [initialize] has finished. Calling anything else before
+  /// [initialize] is a wiring bug in main(), not a runtime condition.
+  Future<void> get _ready {
+    final setup = _setup;
+    if (setup == null) {
+      throw StateError('LocalNotify.initialize must be called first');
+    }
+    return setup;
+  }
 
   @override
   Future<void> initialize({
     required List<NotifyChannel> channels,
     required void Function(NotifySelection selection) onSelect,
-  }) async {
+  }) =>
+      _setup ??= _initialize(channels, onSelect);
+
+  Future<void> _initialize(
+    List<NotifyChannel> channels,
+    void Function(NotifySelection selection) onSelect,
+  ) async {
     for (final c in channels) {
       _channels[c.id] = c;
     }
@@ -78,6 +100,7 @@ final class LocalNotify implements INotify {
 
   @override
   Future<bool> requestPermission() async {
+    await _ready;
     final android = _plugin.resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>();
     if (android != null) {
@@ -98,6 +121,7 @@ final class LocalNotify implements INotify {
 
   @override
   Future<bool> isPermitted() async {
+    await _ready;
     final android = _plugin.resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>();
     if (android != null) {
@@ -107,20 +131,24 @@ final class LocalNotify implements INotify {
   }
 
   @override
-  Future<void> show(NotifyRequest request) => _plugin.show(
-        request.id,
-        request.title,
-        request.body,
-        _details(request.channelId),
-        payload: request.payload,
-      );
+  Future<void> show(NotifyRequest request) async {
+    await _ready;
+    await _plugin.show(
+      request.id,
+      request.title,
+      request.body,
+      _details(request.channelId),
+      payload: request.payload,
+    );
+  }
 
   @override
   Future<void> scheduleAt(
     NotifyRequest request,
     DateTime when, {
     NotifyRepeat repeat = NotifyRepeat.none,
-  }) {
+  }) async {
+    await _ready;
     return _plugin.zonedSchedule(
       request.id,
       request.title,
@@ -135,13 +163,20 @@ final class LocalNotify implements INotify {
   }
 
   @override
-  Future<void> cancel(int id) => _plugin.cancel(id);
+  Future<void> cancel(int id) async {
+    await _ready;
+    await _plugin.cancel(id);
+  }
 
   @override
-  Future<void> cancelAll() => _plugin.cancelAll();
+  Future<void> cancelAll() async {
+    await _ready;
+    await _plugin.cancelAll();
+  }
 
   @override
   Future<NotifySelection?> launchSelection() async {
+    await _ready;
     final details = await _plugin.getNotificationAppLaunchDetails();
     if (details == null || !details.didNotificationLaunchApp) return null;
     final r = details.notificationResponse;
