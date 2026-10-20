@@ -38,26 +38,38 @@ final class AppBanner extends StatelessWidget {
       BannerKind.error => AppColors.error(brightness),
     };
     final defaultIcon = switch (kind) {
-      BannerKind.info => Icons.info_outline,
-      BannerKind.success => Icons.check_circle_outline,
-      BannerKind.warning => Icons.warning_amber_outlined,
-      BannerKind.error => Icons.error_outline,
+      BannerKind.info => Icons.info_outline_rounded,
+      BannerKind.success => Icons.check_circle_outline_rounded,
+      BannerKind.warning => Icons.warning_amber_rounded,
+      BannerKind.error => Icons.error_outline_rounded,
     };
-    final onSurface = Theme.of(context).colorScheme.onSurface;
-    final subtle = Theme.of(context).colorScheme.onSurfaceVariant;
+    final c = SuiteColors.of(context);
+    final onSurface = c.textPrimary;
+    final subtle = c.textSecondary;
+    final container = switch (kind) {
+      BannerKind.info => c.infoContainer,
+      BannerKind.success => c.positiveContainer,
+      BannerKind.warning => c.warningContainer,
+      BannerKind.error => c.negativeContainer,
+    };
 
     return Material(
-      color: accent.withValues(alpha: 0.12),
+      color: container,
       borderRadius: BorderRadius.circular(AppSpacing.borderRadius),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppSpacing.borderRadius),
         child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.md,
+            AppSpacing.smd + 2,
+            AppSpacing.smd,
+            AppSpacing.smd + 2,
+          ),
           child: Row(
             children: [
-              Icon(icon ?? defaultIcon, color: accent, size: 22),
-              const SizedBox(width: AppSpacing.md),
+              Icon(icon ?? defaultIcon, color: accent, size: 20),
+              const SizedBox(width: AppSpacing.smd),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -82,7 +94,7 @@ final class AppBanner extends StatelessWidget {
               if (actionLabel != null && onAction != null)
                 TextButton(onPressed: onAction, child: Text(actionLabel!))
               else if (onTap != null)
-                Icon(Icons.chevron_right, color: subtle),
+                Icon(Icons.chevron_right_rounded, color: subtle),
             ],
           ),
         ),

@@ -1,7 +1,7 @@
-import 'package:core_theme/core_theme.dart';
+import 'package:core_ui/src/widgets/rows.dart';
 import 'package:flutter/material.dart';
 
-/// A standard settings row: leading icon, title, optional subtitle, and either
+/// A standard settings row: icon badge, title, optional subtitle, and either
 /// a [trailing] widget (a Switch, a value label) or a chevron when [onTap] is
 /// set. Keeps every app's Settings list visually identical.
 final class SettingsTile extends StatelessWidget {
@@ -12,6 +12,7 @@ final class SettingsTile extends StatelessWidget {
     this.trailing,
     this.onTap,
     this.showChevron = true,
+    this.iconColor,
     super.key,
   });
 
@@ -25,24 +26,19 @@ final class SettingsTile extends StatelessWidget {
   /// rows. Set false for terminal rows (e.g. an informational tile).
   final bool showChevron;
 
+  /// Tints the badge; neutral when null.
+  final Color? iconColor;
+
   @override
   Widget build(BuildContext context) {
-    final subtle = Theme.of(context).colorScheme.onSurfaceVariant;
-    return ListTile(
-      leading: Icon(icon),
-      title: Text(title, style: AppTextStyles.body),
-      subtitle: subtitle == null
-          ? null
-          : Text(
-              subtitle!,
-              style: AppTextStyles.bodySmall.copyWith(color: subtle),
-            ),
-      trailing:
-          trailing ??
-          (onTap != null && showChevron
-              ? Icon(Icons.chevron_right, color: subtle)
-              : null),
+    return AppListRow(
+      leading: IconBadge(icon: icon, color: iconColor, size: 36),
+      title: title,
+      subtitle: subtitle,
+      trailing: trailing,
+      showChevron: trailing == null && onTap != null && showChevron,
       onTap: onTap,
+      dense: subtitle == null,
     );
   }
 }

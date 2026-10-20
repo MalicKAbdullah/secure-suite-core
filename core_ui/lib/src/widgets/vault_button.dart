@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 
 enum VaultButtonVariant { primary, secondary, destructive }
 
+/// The suite button: a pill, 54 px tall (40 px when [compact]). Primary is
+/// filled in the accent, secondary is a hairline outline in ink, and
+/// destructive is filled in the negative colour.
 final class VaultButton extends StatelessWidget {
   const VaultButton({
     required this.label,
@@ -10,6 +13,8 @@ final class VaultButton extends StatelessWidget {
     this.variant = VaultButtonVariant.primary,
     this.isLoading = false,
     this.isFullWidth = true,
+    this.icon,
+    this.compact = false,
     super.key,
   });
 
@@ -18,59 +23,80 @@ final class VaultButton extends StatelessWidget {
   final VaultButtonVariant variant;
   final bool isLoading;
   final bool isFullWidth;
+  final IconData? icon;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final c = SuiteColors.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    final fg = switch (variant) {
+      VaultButtonVariant.primary => c.onAccent,
+      VaultButtonVariant.secondary => c.textPrimary,
+      VaultButtonVariant.destructive => scheme.onError,
+    };
+    final height =
+        compact ? AppSpacing.buttonHeightSm : AppSpacing.buttonHeight;
     final child = isLoading
-        ? SizedBox(
-            width: 20,
-            height: 20,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: colorScheme.onPrimary,
-            ),
+        ? SizedBox.square(
+            dimension: 18,
+            child: CircularProgressIndicator(strokeWidth: 2, color: fg),
           )
-        : Text(label, style: AppTextStyles.label);
+        : Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (icon != null) ...[
+                Icon(icon, size: compact ? 16 : 18),
+                const SizedBox(width: AppSpacing.sm),
+              ],
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: compact
+                      ? AppTextStyles.labelStrong
+                      : AppTextStyles.button,
+                ),
+              ),
+            ],
+          );
+    final size = Size(64, height);
+    final padding = EdgeInsets.symmetric(
+      horizontal: compact ? AppSpacing.md : AppSpacing.lg,
+    );
+    final onTap = isLoading ? null : onPressed;
 
     final button = switch (variant) {
       VaultButtonVariant.primary => FilledButton(
-        onPressed: isLoading ? null : onPressed,
-        style: FilledButton.styleFrom(
-          backgroundColor: colorScheme.primary,
-          foregroundColor: colorScheme.onPrimary,
-          minimumSize: const Size.fromHeight(52),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.borderRadius),
+          onPressed: onTap,
+          style: FilledButton.styleFrom(
+            minimumSize: size,
+            padding: padding,
+            disabledBackgroundColor:
+                isLoading ? c.accent.withValues(alpha: 0.7) : null,
           ),
+          child: child,
         ),
-        child: child,
-      ),
       VaultButtonVariant.secondary => OutlinedButton(
-        onPressed: isLoading ? null : onPressed,
-        style: OutlinedButton.styleFrom(
-          foregroundColor: colorScheme.primary,
-          side: BorderSide(color: colorScheme.primary),
-          minimumSize: const Size.fromHeight(52),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.borderRadius),
+          onPressed: onTap,
+          style: OutlinedButton.styleFrom(
+            minimumSize: size,
+            padding: padding,
+            side: BorderSide(color: c.border),
           ),
+          child: child,
         ),
-        child: child,
-      ),
       VaultButtonVariant.destructive => FilledButton(
-        onPressed: isLoading ? null : onPressed,
-        style: FilledButton.styleFrom(
-          backgroundColor: colorScheme.error,
-          foregroundColor: colorScheme.onSurface,
-          minimumSize: const Size.fromHeight(52),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.borderRadius),
+          onPressed: onTap,
+          style: FilledButton.styleFrom(
+            backgroundColor: scheme.error,
+            foregroundColor: scheme.onError,
+            minimumSize: size,
+            padding: padding,
           ),
+          child: child,
         ),
-        child: child,
-      ),
     };
 
     if (isFullWidth) {
