@@ -158,6 +158,8 @@ uses exactly one hero card.
 - a large live clock with a greeting and the date;
 - a prominent fingerprint target, which pulses while the system prompt is up;
 - the password field, which shakes on error, and the unlock button;
+- a quiet "Forgot password?" link, which swaps the clock and fingerprint for
+  the recovery-key form (recovery key, new password, confirm);
 - the "by Offlyne" endorsement at the bottom.
 
 Pass `appMark: SuiteAppIcon(app: SuiteApp.<app>, size: 56)`.

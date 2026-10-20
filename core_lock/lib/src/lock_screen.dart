@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:core_crypto/core_crypto.dart';
+import 'package:core_lock/src/lock_attempt.dart';
 import 'package:core_lock/src/lock_controller.dart';
 import 'package:core_theme/core_theme.dart';
 import 'package:core_ui/core_ui.dart';
@@ -8,7 +10,8 @@ import 'package:flutter/material.dart';
 
 /// Full-screen cover shown while the app is locked. A fingerprint is the
 /// primary unlock (auto-prompted once per lock when enabled); the app-set
-/// password is always available underneath.
+/// password is always available underneath, and "Forgot password?" resets it
+/// with the recovery key.
 final class LockScreen extends StatefulWidget {
   const LockScreen({required this.controller, this.appMark, super.key});
 
@@ -35,6 +38,7 @@ class _LockScreenState extends State<LockScreen> with TickerProviderStateMixin {
   Timer? _tick;
   DateTime _now = DateTime.now();
   bool _busy = false;
+  bool _recovering = false;
   String? _error;
 
   LockController get _c => widget.controller;
@@ -50,8 +54,13 @@ class _LockScreenState extends State<LockScreen> with TickerProviderStateMixin {
   /// rather than a periodic poll.
   void _scheduleTick() {
     final now = DateTime.now();
-    final next = DateTime(now.year, now.month, now.day, now.hour, now.minute)
-        .add(const Duration(minutes: 1));
+    final next = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      now.hour,
+      now.minute,
+    ).add(const Duration(minutes: 1));
     _tick = Timer(next.difference(now), () {
       if (!mounted) return;
       setState(() => _now = DateTime.now());
@@ -101,14 +110,14 @@ class _LockScreenState extends State<LockScreen> with TickerProviderStateMixin {
       _busy = true;
       _error = null;
     });
-    final ok = await _c.unlockWithPassword(value);
+    final result = await _c.unlockWithPassword(value);
     if (!mounted) return;
     setState(() {
       _busy = false;
-      if (ok) {
+      if (result is LockAttemptSuccess) {
         _password.clear();
       } else {
-        _error = 'Incorrect password.';
+        _error = lockAttemptError(result, wrong: 'Incorrect password.');
         _shake.forward(from: 0);
       }
     });
@@ -156,8 +165,10 @@ class _LockScreenState extends State<LockScreen> with TickerProviderStateMixin {
         '${_now.minute.toString().padLeft(2, '0')}';
     final date =
         '${_days[_now.weekday - 1]}, ${_now.day} ${_months[_now.month - 1]}';
-    final entrance =
-        CurvedAnimation(parent: _enter, curve: AppMotion.emphasized);
+    final entrance = CurvedAnimation(
+      parent: _enter,
+      curve: AppMotion.emphasized,
+    );
 
     Widget rise(Widget child, double from) => AnimatedBuilder(
           animation: entrance,
@@ -234,9 +245,10 @@ class _LockScreenState extends State<LockScreen> with TickerProviderStateMixin {
                           Row(
                             children: [
                               SizedBox(
-                                  width: 40,
-                                  height: 40,
-                                  child: FittedBox(child: mark)),
+                                width: 40,
+                                height: 40,
+                                child: FittedBox(child: mark),
+                              ),
                               const SizedBox(width: AppSpacing.smd),
                               Expanded(
                                 child: Column(
@@ -257,58 +269,88 @@ class _LockScreenState extends State<LockScreen> with TickerProviderStateMixin {
                                   ],
                                 ),
                               ),
-                              Icon(Icons.lock_outline_rounded,
-                                  size: 18, color: c.textTertiary),
+                              Icon(
+                                Icons.lock_outline_rounded,
+                                size: 18,
+                                color: c.textTertiary,
+                              ),
                             ],
                           ),
                           8,
                         ),
-                        const Spacer(flex: 2),
-                        rise(
-                          Column(
-                            children: [
-                              Text(
-                                time,
-                                style: AppTextStyles.heroXL.copyWith(
-                                  fontSize: 88,
-                                  letterSpacing: -4,
-                                  fontWeight: FontWeight.w400,
-                                  color: c.textPrimary,
+                        if (_recovering) ...[
+                          const SizedBox(height: AppSpacing.xl),
+                          _RecoveryPanel(
+                            controller: _c,
+                            onBack: () => setState(() => _recovering = false),
+                          ),
+                          const Spacer(),
+                        ] else ...[
+                          const Spacer(flex: 2),
+                          rise(
+                            Column(
+                              children: [
+                                Text(
+                                  time,
+                                  style: AppTextStyles.heroXL.copyWith(
+                                    fontSize: 88,
+                                    letterSpacing: -4,
+                                    fontWeight: FontWeight.w400,
+                                    color: c.textPrimary,
+                                  ),
                                 ),
+                                const SizedBox(height: AppSpacing.sm),
+                                Text(
+                                  '$_greeting · $date',
+                                  style: AppTextStyles.label.copyWith(
+                                    color: c.textSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            16,
+                          ),
+                          if (_c.biometricEnabled) ...[
+                            const SizedBox(height: AppSpacing.xxl),
+                            rise(
+                              _BiometricButton(
+                                busy: _busy,
+                                onPressed: _busy ? null : _fingerprint,
                               ),
-                              const SizedBox(height: AppSpacing.sm),
-                              Text(
-                                '$_greeting · $date',
+                              24,
+                            ),
+                          ],
+                          const Spacer(flex: 2),
+                          rise(field, 28),
+                          const SizedBox(height: AppSpacing.smd),
+                          rise(
+                            VaultButton(
+                              label: 'Unlock ${_c.appName}',
+                              isLoading: _busy,
+                              onPressed: _busy ? null : _submitPassword,
+                            ),
+                            32,
+                          ),
+                          const SizedBox(height: AppSpacing.xs),
+                          rise(
+                            TextButton(
+                              onPressed: _busy
+                                  ? null
+                                  : () => setState(() {
+                                        _error = null;
+                                        _recovering = true;
+                                      }),
+                              child: Text(
+                                'Forgot password?',
                                 style: AppTextStyles.label.copyWith(
                                   color: c.textSecondary,
                                 ),
                               ),
-                            ],
-                          ),
-                          16,
-                        ),
-                        if (_c.biometricEnabled) ...[
-                          const SizedBox(height: AppSpacing.xxl),
-                          rise(
-                            _BiometricButton(
-                              busy: _busy,
-                              onPressed: _busy ? null : _fingerprint,
                             ),
-                            24,
+                            32,
                           ),
                         ],
-                        const Spacer(flex: 2),
-                        rise(field, 28),
-                        const SizedBox(height: AppSpacing.smd),
-                        rise(
-                          VaultButton(
-                            label: 'Unlock ${_c.appName}',
-                            isLoading: _busy,
-                            onPressed: _busy ? null : _submitPassword,
-                          ),
-                          32,
-                        ),
-                        const SizedBox(height: AppSpacing.lg),
+                        const SizedBox(height: AppSpacing.md),
                         const SuiteEndorsement(),
                         const SizedBox(height: AppSpacing.md),
                       ],
@@ -320,6 +362,146 @@ class _LockScreenState extends State<LockScreen> with TickerProviderStateMixin {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// "Forgot password?": the recovery key plus a new password resets the
+/// password and unlocks, under the same attempt cooldown as the password.
+final class _RecoveryPanel extends StatefulWidget {
+  const _RecoveryPanel({required this.controller, required this.onBack});
+
+  final LockController controller;
+  final VoidCallback onBack;
+
+  @override
+  State<_RecoveryPanel> createState() => _RecoveryPanelState();
+}
+
+class _RecoveryPanelState extends State<_RecoveryPanel> {
+  final _key = TextEditingController();
+  final _password = TextEditingController();
+  final _confirm = TextEditingController();
+  late final Future<bool> _hasKey = widget.controller.hasRecoveryKey();
+  bool _busy = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _key.dispose();
+    _password.dispose();
+    _confirm.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (_busy) return;
+    final String? problem;
+    if (RecoveryKey.normalize(_key.text) == null) {
+      problem = 'A recovery key has ${RecoveryKey.length} letters and '
+          'numbers, like XXXX-XXXX-…';
+    } else if (_password.text.length < 6) {
+      problem = 'Use at least 6 characters for the new password.';
+    } else if (_password.text != _confirm.text) {
+      problem = 'New passwords do not match.';
+    } else {
+      problem = null;
+    }
+    if (problem != null) {
+      setState(() => _error = problem);
+      return;
+    }
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    final result = await widget.controller.resetWithRecoveryKey(
+      recoveryKey: _key.text,
+      newPassword: _password.text,
+    );
+    if (!mounted) return;
+    setState(() {
+      _busy = false;
+      if (result is! LockAttemptSuccess) {
+        _error = lockAttemptError(
+          result,
+          wrong: 'That recovery key is not right.',
+        );
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = SuiteColors.of(context);
+    final appName = widget.controller.appName;
+    final back = TextButton(
+      onPressed: _busy ? null : widget.onBack,
+      child: Text(
+        'Back to password',
+        style: AppTextStyles.label.copyWith(color: c.textSecondary),
+      ),
+    );
+    return FutureBuilder<bool>(
+      future: _hasKey,
+      builder: (context, snapshot) {
+        final hasKey = snapshot.data;
+        if (hasKey == null) return const SizedBox.shrink();
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Reset your password',
+              style: AppTextStyles.h3.copyWith(color: c.textPrimary),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              hasKey
+                  ? 'Enter the recovery key you saved when you set up the '
+                      'lock, then choose a new password. Your data stays as '
+                      'it is.'
+                  : 'No recovery key was set up for $appName, so a '
+                      'forgotten password cannot be reset. Unlock with your '
+                      'fingerprint, then create a recovery key in Settings.',
+              style: AppTextStyles.bodySmall.copyWith(color: c.textSecondary),
+            ),
+            if (hasKey) ...[
+              const SizedBox(height: AppSpacing.lg),
+              AppTextField(
+                controller: _key,
+                label: 'Recovery key',
+                hint: 'XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX',
+                monospace: true,
+                textInputAction: TextInputAction.next,
+              ),
+              const SizedBox(height: AppSpacing.smd),
+              AppTextField(
+                controller: _password,
+                label: 'New password',
+                obscureText: true,
+                textInputAction: TextInputAction.next,
+              ),
+              const SizedBox(height: AppSpacing.smd),
+              AppTextField(
+                controller: _confirm,
+                label: 'Confirm new password',
+                obscureText: true,
+                textInputAction: TextInputAction.go,
+                errorText: _error,
+                onSubmitted: (_) => _submit(),
+              ),
+              const SizedBox(height: AppSpacing.smd),
+              VaultButton(
+                label: 'Reset password and unlock',
+                isLoading: _busy,
+                onPressed: _busy ? null : _submit,
+              ),
+            ],
+            const SizedBox(height: AppSpacing.xs),
+            back,
+          ],
+        );
+      },
     );
   }
 }

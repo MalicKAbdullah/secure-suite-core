@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        pkg: [core_crypto, core_storage, core_security, core_theme, core_ui]
+        pkg: [core_crypto, core_storage, core_security, core_theme, core_ui, core_lock, core_backup]
     defaults:
       run:
         working-directory: ${{ matrix.pkg }}

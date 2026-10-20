@@ -1,4 +1,7 @@
+import 'package:core_lock/src/identity_check.dart';
+import 'package:core_lock/src/lock_attempt.dart';
 import 'package:core_lock/src/lock_controller.dart';
+import 'package:core_lock/src/recovery_key_view.dart';
 import 'package:core_theme/core_theme.dart';
 import 'package:flutter/material.dart';
 
@@ -6,9 +9,12 @@ import 'package:flutter/material.dart';
 /// Suite app. Renders the whole flow from a [LockController]:
 ///
 ///  * off  → "Require a password to open" switch that opens a set-password
-///    form (with an optional "use fingerprint" toggle when available);
+///    form (with an optional "use fingerprint" toggle when available), then
+///    shows the new recovery key once;
 ///  * on   → the switch turns it off (after confirming the password), plus
-///    "Use fingerprint" and "Change password" rows.
+///    "Use fingerprint", "Change password" (a fresh fingerprint stands in for
+///    the current password when the session was opened with one) and
+///    "Recovery key" (re-auth, then a new key replaces the old) rows.
 ///
 /// State-management-agnostic: pass the same controller your app already builds.
 final class AppLockSettings extends StatefulWidget {
@@ -22,6 +28,7 @@ final class AppLockSettings extends StatefulWidget {
 
 class _AppLockSettingsState extends State<AppLockSettings> {
   bool _biometricAvailable = false;
+  bool? _hasRecoveryKey;
 
   LockController get _c => widget.controller;
 
@@ -38,13 +45,26 @@ class _AppLockSettingsState extends State<AppLockSettings> {
     super.dispose();
   }
 
+  /// The gate's one-time offer can create a key while this is mounted.
   void _onChange() {
-    if (mounted) setState(() {});
+    if (!mounted) return;
+    setState(() {});
+    _c.hasRecoveryKey().then((has) {
+      if (mounted && has != _hasRecoveryKey) {
+        setState(() => _hasRecoveryKey = has);
+      }
+    });
   }
 
   Future<void> _probe() async {
     final can = await _c.canUseBiometric();
-    if (mounted) setState(() => _biometricAvailable = can);
+    final hasKey = await _c.hasRecoveryKey();
+    if (mounted) {
+      setState(() {
+        _biometricAvailable = can;
+        _hasRecoveryKey = hasKey;
+      });
+    }
   }
 
   void _snack(String message) {
@@ -69,55 +89,100 @@ class _AppLockSettingsState extends State<AppLockSettings> {
       password: result.password,
       useBiometric: result.useBiometric,
     );
+    await _showNewRecoveryKey();
     _snack('App lock is on.');
   }
 
   Future<void> _turnOff() async {
-    final password =
-        await _promptPassword('Turn off app lock', 'Your password');
+    final password = await askAppLockPassword(
+      context,
+      title: 'Turn off app lock',
+    );
     if (password == null) return;
-    final ok = await _c.disable(password);
-    _snack(ok ? 'App lock is off.' : 'Incorrect password.');
+    final result = await _c.disable(password);
+    if (result is LockAttemptSuccess) setState(() => _hasRecoveryKey = false);
+    _snack(
+      result is LockAttemptSuccess
+          ? 'App lock is off.'
+          : lockAttemptError(result, wrong: 'Incorrect password.'),
+    );
   }
 
   Future<void> _changePassword() async {
+    final withBiometric = _c.canChangePasswordWithBiometric;
     final result = await Navigator.of(context).push<_ChangeResult>(
       MaterialPageRoute(
         fullscreenDialog: true,
-        builder: (_) => const _ChangePasswordScreen(),
+        builder: (_) => _ChangePasswordScreen(askCurrent: !withBiometric),
       ),
     );
     if (result == null) return;
-    final ok = await _c.changePassword(
-      oldPassword: result.oldPassword,
+    final outcome = await _c.changePassword(
+      currentPassword: withBiometric ? null : result.currentPassword,
       newPassword: result.newPassword,
     );
-    _snack(ok ? 'Password changed.' : 'Current password is incorrect.');
+    _snack(
+      outcome is LockAttemptSuccess
+          ? 'Password changed.'
+          : lockAttemptError(
+              outcome,
+              wrong: withBiometric
+                  ? 'Fingerprint not confirmed.'
+                  : 'Current password is incorrect.',
+            ),
+    );
   }
 
-  Future<String?> _promptPassword(String title, String label) {
-    final controller = TextEditingController();
-    return showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(title),
-        content: TextField(
-          controller: controller,
-          obscureText: true,
-          autofocus: true,
-          decoration: InputDecoration(labelText: label),
-          onSubmitted: (v) => Navigator.pop(ctx, v),
+  Future<void> _recoveryKey() async {
+    if (!await confirmAppLockIdentity(
+      context,
+      _c,
+      reason: 'Create a new recovery key',
+    )) {
+      return;
+    }
+    if (_hasRecoveryKey == true && mounted) {
+      final replace = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Replace your recovery key?'),
+          content: const Text(
+            'Your current recovery key will stop working. Recovery keys are '
+            'never stored, so the current one cannot be shown again.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Create new key'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+      );
+      if (replace != true) return;
+    }
+    await _showNewRecoveryKey();
+  }
+
+  /// Creates a recovery key and shows it until the user confirms saving it.
+  Future<void> _showNewRecoveryKey() async {
+    final key = await _c.createRecoveryKey();
+    if (!mounted) return;
+    setState(() => _hasRecoveryKey = true);
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (routeContext) => PopScope(
+          canPop: false,
+          child: RecoveryKeyView(
+            recoveryKey: key,
+            appName: _c.appName,
+            onDone: () => Navigator.pop(routeContext),
           ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, controller.text),
-            child: const Text('Confirm'),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -156,8 +221,25 @@ class _AppLockSettingsState extends State<AppLockSettings> {
             ListTile(
               leading: const Icon(Icons.password_outlined),
               title: const Text('Change password'),
+              subtitle: _c.canChangePasswordWithBiometric
+                  ? const Text('Confirm with your fingerprint')
+                  : null,
               trailing: const Icon(Icons.chevron_right),
               onTap: _changePassword,
+            ),
+            const Divider(height: 1),
+            ListTile(
+              leading: const Icon(Icons.key_outlined),
+              title: const Text('Recovery key'),
+              subtitle: Text(
+                switch (_hasRecoveryKey) {
+                  true => 'Set · create a new one if you lost it',
+                  false => 'Not set · needed if you forget your password',
+                  null => '',
+                },
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: _recoveryKey,
             ),
           ],
         ],
@@ -276,13 +358,16 @@ class _SetPasswordScreenState extends State<_SetPasswordScreen> {
 }
 
 class _ChangeResult {
-  const _ChangeResult(this.oldPassword, this.newPassword);
-  final String oldPassword;
+  const _ChangeResult(this.currentPassword, this.newPassword);
+  final String currentPassword;
   final String newPassword;
 }
 
 class _ChangePasswordScreen extends StatefulWidget {
-  const _ChangePasswordScreen();
+  const _ChangePasswordScreen({required this.askCurrent});
+
+  /// False when a fresh fingerprint proves identity instead.
+  final bool askCurrent;
 
   @override
   State<_ChangePasswordScreen> createState() => _ChangePasswordScreenState();
@@ -326,19 +411,28 @@ class _ChangePasswordScreenState extends State<_ChangePasswordScreen> {
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.md),
         children: [
-          TextField(
-            controller: _old,
-            obscureText: true,
-            autofocus: true,
-            decoration: const InputDecoration(
-              labelText: 'Current password',
-              border: OutlineInputBorder(),
+          if (widget.askCurrent) ...[
+            TextField(
+              controller: _old,
+              obscureText: true,
+              autofocus: true,
+              decoration: const InputDecoration(
+                labelText: 'Current password',
+                border: OutlineInputBorder(),
+              ),
             ),
-          ),
-          const SizedBox(height: AppSpacing.md),
+            const SizedBox(height: AppSpacing.md),
+          ] else ...[
+            Text(
+              "You'll confirm with your fingerprint when you save.",
+              style: AppTextStyles.bodySmall,
+            ),
+            const SizedBox(height: AppSpacing.md),
+          ],
           TextField(
             controller: _new,
             obscureText: true,
+            autofocus: !widget.askCurrent,
             decoration: const InputDecoration(
               labelText: 'New password',
               border: OutlineInputBorder(),
