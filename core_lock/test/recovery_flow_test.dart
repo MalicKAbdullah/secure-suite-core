@@ -174,4 +174,20 @@ void main() {
     expect(storage.m['t_lock_recovery'], isNull);
     expect(storage.m['t_lock_recovery_prompted'], 'true');
   });
+
+  testWidgets('the gate shows the app mark on the lock screen', (tester) async {
+    const mark = SizedBox(key: ValueKey('app-mark'), width: 56, height: 56);
+    await tester.pumpWidget(
+      MaterialApp(
+        builder: (context, child) => AppLockGate(
+          controller: controller(),
+          appMark: mark,
+          child: child!,
+        ),
+        home: const Scaffold(body: Text('Home')),
+      ),
+    );
+    await settle(tester);
+    expect(find.byKey(const ValueKey('app-mark')), findsOneWidget);
+  });
 }

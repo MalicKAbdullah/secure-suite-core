@@ -13,10 +13,18 @@ import 'package:flutter/material.dart';
 /// Wire it without any state-management dependency: pass a [LockController]
 /// (however your app builds it) and the router child.
 final class AppLockGate extends StatefulWidget {
-  const AppLockGate({required this.controller, required this.child, super.key});
+  const AppLockGate({
+    required this.controller,
+    required this.child,
+    this.appMark,
+    super.key,
+  });
 
   final LockController controller;
   final Widget child;
+
+  /// The app's mark for [LockScreen], usually a `SuiteAppIcon`.
+  final Widget? appMark;
 
   @override
   State<AppLockGate> createState() => _AppLockGateState();
@@ -55,7 +63,9 @@ class _AppLockGateState extends State<AppLockGate> with WidgetsBindingObserver {
       children: [
         Offstage(offstage: locked || offer, child: widget.child),
         if (locked)
-          _OverlayHost(child: LockScreen(controller: c))
+          _OverlayHost(
+            child: LockScreen(controller: c, appMark: widget.appMark),
+          )
         else if (offer)
           _OverlayHost(child: RecoveryKeyOffer(controller: c)),
       ],
