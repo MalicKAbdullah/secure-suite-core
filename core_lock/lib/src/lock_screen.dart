@@ -204,109 +204,130 @@ class _LockScreenState extends State<LockScreen> with TickerProviderStateMixin {
 
     return Scaffold(
       backgroundColor: c.background,
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, box) => SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: box.maxHeight),
-              child: IntrinsicHeight(
-                child: Column(
-                  children: [
-                    const SizedBox(height: AppSpacing.lg),
-                    rise(
-                      Row(
-                        children: [
-                          SizedBox(
-                              width: 40,
-                              height: 40,
-                              child: FittedBox(child: mark)),
-                          const SizedBox(width: AppSpacing.smd),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  _c.appName,
-                                  style: AppTextStyles.h4.copyWith(
-                                    color: c.textPrimary,
-                                  ),
+      body: Stack(
+        children: [
+          // The family mark, oversized and near-invisible, gives the screen
+          // texture without showing anything from inside the app.
+          Positioned(
+            right: -150,
+            top: 72,
+            child: ExcludeSemantics(
+              child: SuiteMark(
+                size: 460,
+                color: c.accent.withValues(alpha: 0.04),
+                accentColor: c.accent.withValues(alpha: 0.08),
+                variant: SuiteMarkVariant.accent,
+              ),
+            ),
+          ),
+          SafeArea(
+            child: LayoutBuilder(
+              builder: (context, box) => SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: box.maxHeight),
+                  child: IntrinsicHeight(
+                    child: Column(
+                      children: [
+                        const SizedBox(height: AppSpacing.lg),
+                        rise(
+                          Row(
+                            children: [
+                              SizedBox(
+                                  width: 40,
+                                  height: 40,
+                                  child: FittedBox(child: mark)),
+                              const SizedBox(width: AppSpacing.smd),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _c.appName,
+                                      style: AppTextStyles.h4.copyWith(
+                                        color: c.textPrimary,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Locked to keep your data private.',
+                                      style: AppTextStyles.bodySmall.copyWith(
+                                        color: c.textSecondary,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                Text(
-                                  'Locked to keep your data private.',
-                                  style: AppTextStyles.bodySmall.copyWith(
-                                    color: c.textSecondary,
-                                  ),
-                                ),
-                              ],
-                            ),
+                              ),
+                              Icon(Icons.lock_outline_rounded,
+                                  size: 18, color: c.textTertiary),
+                            ],
                           ),
-                          Icon(Icons.lock_outline_rounded,
-                              size: 18, color: c.textTertiary),
-                        ],
-                      ),
-                      8,
-                    ),
-                    const Spacer(),
-                    rise(
-                      Column(
-                        children: [
-                          Text(
-                            time,
-                            style: AppTextStyles.heroXL.copyWith(
-                              fontSize: 88,
-                              letterSpacing: -4,
-                              fontWeight: FontWeight.w400,
-                              color: c.textPrimary,
-                            ),
-                          ),
-                          const SizedBox(height: AppSpacing.sm),
-                          Text(
-                            '$_greeting · $date',
-                            style: AppTextStyles.label.copyWith(
-                              color: c.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                      16,
-                    ),
-                    const Spacer(),
-                    if (_c.biometricEnabled)
-                      rise(
-                        _BiometricButton(
-                          busy: _busy,
-                          onPressed: _busy ? null : _fingerprint,
+                          8,
                         ),
-                        24,
-                      ),
-                    const SizedBox(height: AppSpacing.xl),
-                    rise(field, 28),
-                    const SizedBox(height: AppSpacing.smd),
-                    rise(
-                      VaultButton(
-                        label: 'Unlock ${_c.appName}',
-                        isLoading: _busy,
-                        onPressed: _busy ? null : _submitPassword,
-                      ),
-                      32,
+                        const Spacer(flex: 2),
+                        rise(
+                          Column(
+                            children: [
+                              Text(
+                                time,
+                                style: AppTextStyles.heroXL.copyWith(
+                                  fontSize: 88,
+                                  letterSpacing: -4,
+                                  fontWeight: FontWeight.w400,
+                                  color: c.textPrimary,
+                                ),
+                              ),
+                              const SizedBox(height: AppSpacing.sm),
+                              Text(
+                                '$_greeting · $date',
+                                style: AppTextStyles.label.copyWith(
+                                  color: c.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                          16,
+                        ),
+                        if (_c.biometricEnabled) ...[
+                          const SizedBox(height: AppSpacing.xxl),
+                          rise(
+                            _BiometricButton(
+                              busy: _busy,
+                              onPressed: _busy ? null : _fingerprint,
+                            ),
+                            24,
+                          ),
+                        ],
+                        const Spacer(flex: 2),
+                        rise(field, 28),
+                        const SizedBox(height: AppSpacing.smd),
+                        rise(
+                          VaultButton(
+                            label: 'Unlock ${_c.appName}',
+                            isLoading: _busy,
+                            onPressed: _busy ? null : _submitPassword,
+                          ),
+                          32,
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
+                        const SuiteEndorsement(),
+                        const SizedBox(height: AppSpacing.md),
+                      ],
                     ),
-                    const SizedBox(height: AppSpacing.lg),
-                    const SuiteEndorsement(),
-                    const SizedBox(height: AppSpacing.md),
-                  ],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
 }
 
 /// The primary unlock: a large fingerprint target on a soft accent disc,
-/// with a slow breathing ring while the system prompt is up.
+/// that breathes a few times when the screen appears, and a travelling arc
+/// while the system prompt is up. The breathing is finite so the screen
+/// settles (and `pumpAndSettle` returns); both stop under reduced motion.
 final class _BiometricButton extends StatefulWidget {
   const _BiometricButton({required this.busy, required this.onPressed});
 
@@ -318,11 +339,16 @@ final class _BiometricButton extends StatefulWidget {
 }
 
 class _BiometricButtonState extends State<_BiometricButton>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late final AnimationController _pulse = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 1600),
   );
+  late final AnimationController _breath = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1400),
+  );
+  bool _breathed = false;
 
   @override
   void didUpdateWidget(_BiometricButton old) {
@@ -337,7 +363,12 @@ class _BiometricButtonState extends State<_BiometricButton>
   }
 
   void _sync() {
-    final animate = widget.busy && !MediaQuery.of(context).disableAnimations;
+    final still = MediaQuery.of(context).disableAnimations;
+    if (!_breathed && !still) {
+      _breathed = true;
+      _breath.repeat(reverse: true, count: 6);
+    }
+    final animate = widget.busy && !still;
     if (animate && !_pulse.isAnimating) {
       _pulse.repeat();
     } else if (!animate && _pulse.isAnimating) {
@@ -349,6 +380,7 @@ class _BiometricButtonState extends State<_BiometricButton>
 
   @override
   void dispose() {
+    _breath.dispose();
     _pulse.dispose();
     super.dispose();
   }
@@ -364,10 +396,11 @@ class _BiometricButtonState extends State<_BiometricButton>
           SizedBox.square(
             dimension: 112,
             child: AnimatedBuilder(
-              animation: _pulse,
+              animation: Listenable.merge([_pulse, _breath]),
               builder: (context, child) => CustomPaint(
                 painter: _RingPainter(
                   progress: _pulse.value,
+                  breath: Curves.easeInOut.transform(_breath.value),
                   color: c.accent,
                   track: c.border,
                 ),
@@ -407,11 +440,13 @@ class _BiometricButtonState extends State<_BiometricButton>
 final class _RingPainter extends CustomPainter {
   _RingPainter({
     required this.progress,
+    required this.breath,
     required this.color,
     required this.track,
   });
 
   final double progress;
+  final double breath;
   final Color color;
   final Color track;
 
@@ -419,6 +454,13 @@ final class _RingPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final center = size.center(Offset.zero);
     final r = size.shortestSide / 2 - 1;
+    if (breath > 0) {
+      canvas.drawCircle(
+        center,
+        44 + (r - 44) * breath,
+        Paint()..color = color.withValues(alpha: 0.10 * breath),
+      );
+    }
     canvas.drawCircle(
       center,
       r,
@@ -443,5 +485,8 @@ final class _RingPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_RingPainter old) =>
-      old.progress != progress || old.color != color || old.track != track;
+      old.progress != progress ||
+      old.breath != breath ||
+      old.color != color ||
+      old.track != track;
 }
