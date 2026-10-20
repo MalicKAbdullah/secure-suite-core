@@ -30,6 +30,9 @@ final class AppTextField extends StatefulWidget {
     this.clearable = true,
     this.keyboardType,
     this.textInputAction,
+    this.textCapitalization = TextCapitalization.none,
+    this.autocorrect = true,
+    this.enableSuggestions = true,
     this.inputFormatters,
     this.autofillHints,
     this.prefixIcon,
@@ -66,6 +69,9 @@ final class AppTextField extends StatefulWidget {
   final bool clearable;
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
+  final TextCapitalization textCapitalization;
+  final bool autocorrect;
+  final bool enableSuggestions;
   final List<TextInputFormatter>? inputFormatters;
   final Iterable<String>? autofillHints;
   final IconData? prefixIcon;
@@ -243,6 +249,9 @@ class _AppTextFieldState extends State<AppTextField> {
       obscuringCharacter: '•',
       keyboardType: widget.keyboardType,
       textInputAction: widget.textInputAction,
+      textCapitalization: widget.textCapitalization,
+      autocorrect: widget.autocorrect,
+      enableSuggestions: widget.enableSuggestions,
       inputFormatters: widget.inputFormatters,
       autofillHints: widget.autofillHints,
       autofocus: widget.autofocus,
