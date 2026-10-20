@@ -22,6 +22,7 @@ white 2-unit-stroke glyph on the shared 24-unit grid, one family dot per glyph.
 | `res/drawable/ic_suite_foreground.xml` | Adaptive icon foreground (vector, 108dp canvas) |
 | `res/drawable/ic_suite_background.xml` | Adaptive icon background (flat accent) |
 | `res/drawable/ic_suite_monochrome.xml` | Android 13+ themed icon layer |
+| `res/drawable/ic_stat_notify.xml` | Status-bar notification icon (glyph, white on transparent, 24dp) |
 | `res/mipmap-anydpi-v26/ic_launcher.xml`, `ic_launcher_round.xml` | Adaptive icon wiring the three layers |
 | `png/icon-1024.png` | Full-bleed 1024px master: iOS icon and pre-API-26 Android mipmaps |
 | `png/icon-foreground-1024.png` | Glyph on transparent, 108-unit canvas: flutter_launcher_icons foreground, Android 12 splash icon |
@@ -64,6 +65,19 @@ Paths below are relative to the app directory, e.g.
 5. Delete the now-unreferenced `android/app/src/main/res/drawable-*dpi/ic_launcher_foreground.png`
    files and the `ic_launcher_background` entry in `res/values/colors.xml`.
 6. Upload `png/play-store-512.png` as the Play listing icon.
+
+## Notification icon
+
+Android draws a notification's small icon as a silhouette, so the launcher
+icon shows as a white square. Each app that posts notifications:
+
+1. Copies `res/drawable/ic_stat_notify.xml` →
+   `android/app/src/main/res/drawable/`.
+2. Keeps it through release resource shrinking (Dart names it by string, so
+   R8 cannot see the reference) in `android/app/src/main/res/raw/keep.xml`:
+   `<resources xmlns:tools="http://schemas.android.com/tools" tools:keep="@drawable/ic_stat_notify" />`.
+3. Passes it and the app accent to `core_notify`:
+   `LocalNotify(smallIcon: 'ic_stat_notify', accentColor: AppAccents.<app>.light)`.
 
 The `<monochrome>` layer needs `compileSdk` 33 or higher; older launchers
 ignore it.

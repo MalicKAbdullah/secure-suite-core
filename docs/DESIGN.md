@@ -127,7 +127,7 @@ biometric pulse stop.
 | Change | `DeltaBadge` with `DeltaPolarity.upIsGood / upIsBad / neutral` |
 | Charts | `Sparkline`, `MiniBarChart`, `DonutChart` + `ChartLegendRow`, `SegmentedBar`, `AppProgressBar` (overflow and pace marker) |
 | Lists | `AppListRow`, `IconBadge`, `RowGroup` (grouped card, inset separators), `SettingsTile`, `SectionHeader` |
-| Inputs | `AppTextField` (`filled` / `underline` / `outlined`, floating label inside, clear, reveal, mono), `AppSearchField`, `AppSegmentedControl`, `AppChip` |
+| Inputs | `AppTextField` (`filled` / `underline` / `outlined`, floating label inside, clear, reveal, mono), `AppSelectField` (a field that opens a sheet of rows; replaces Material dropdowns), `AppSearchField`, `AppSegmentedControl`, `AppChip` |
 | Actions | `VaultButton` (primary / secondary / destructive, `icon`, `compact`), `BottomActionBar` |
 | States | `AppEmptyState` (typographic: figure or icon ring, headline, sentence, action), `Skeleton`, `SkeletonRow`, `AppBanner`, `LoadingOverlay` |
 | Brand | `SuiteMark`, `SuiteWordmark`, `SuiteLockup`, `SuiteEndorsement`, `SuiteAppIcon` (see BRAND.md) |
@@ -189,6 +189,22 @@ flutter_native_splash:
 
 The tile colour is the app's light accent in both modes, which keeps the icon
 identical to the launcher icon.
+
+## Notifications
+
+Every notification carries the app's identity on Android:
+
+- **Small icon**: `ic_stat_notify`, the app glyph white on transparent, from
+  the brand kit ([install steps](../brand/icons/README.md#notification-icon)).
+- **Colour**: the app's light accent, which tints the icon and app name.
+
+```dart
+LocalNotify(smallIcon: 'ic_stat_notify', accentColor: AppAccents.budgetly.light)
+```
+
+Channel names are short sentence-case nouns ("Budget alerts", "Dose
+reminders"). A channel description is one sentence fragment, without a full
+stop, that says when the notification arrives.
 
 ## Previews
 
