@@ -5,25 +5,26 @@ import 'package:core_ui/core_ui.dart';
 import 'package:flutter/material.dart';
 
 /// The one lock-screen composition every Offlyne app uses: on the app's flat
-/// background, a single centred column — the app tile, the app name, one
-/// short line, then the unlock controls — sitting a little below the middle
-/// of the screen so it stays in thumb reach, with the "by Offlyne"
-/// endorsement at the bottom.
+/// background, a single centred column — the app tile, the app name, then
+/// the unlock controls — a little above the middle of the screen. An
+/// optional [bottom] control (the fingerprint button) sits low in thumb
+/// reach, above the "by Offlyne" endorsement.
 ///
 /// [LockScreen] builds on it; apps with their own unlock (a master password,
 /// a PIN keypad) pass their controls as [children] so every lock in the
 /// suite has the same structure, spacing and type.
 ///
 /// The column is placed by alignment rather than flex spacers so it never
-/// depends on intrinsic heights. When the keyboard opens the free space
-/// collapses first, then the column scrolls; the endorsement steps aside so
-/// nothing overlaps.
+/// depends on intrinsic heights. With the keyboard up the tile shrinks, the
+/// gaps tighten and [bottom] and the endorsement step aside, so the field and
+/// its button stay above the keyboard and nothing overlaps.
 final class LockLayout extends StatefulWidget {
   const LockLayout({
     required this.mark,
     required this.title,
-    required this.message,
     required this.children,
+    this.message,
+    this.bottom,
     super.key,
   });
 
@@ -34,11 +35,15 @@ final class LockLayout extends StatefulWidget {
   /// The app name.
   final String title;
 
-  /// One short line under the name, e.g. "Unlock to continue".
-  final String message;
+  /// An optional line under the name, only when the screen is not the plain
+  /// unlock (e.g. "Reset your password").
+  final String? message;
 
   /// The unlock controls, top to bottom. Space them with [LockLayout.gap].
   final List<Widget> children;
+
+  /// A control pinned low on the screen, usually [LockBiometricButton].
+  final Widget? bottom;
 
   static const double markSize = 64;
 
@@ -80,8 +85,6 @@ class _LockLayoutState extends State<LockLayout>
   @override
   Widget build(BuildContext context) {
     final c = SuiteColors.of(context);
-    // With the keyboard up the header tightens so the field and its button
-    // stay above the keyboard on small phones.
     final keyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
     const compactMark = 48.0;
     final settle = MediaQuery.disableAnimationsOf(context)
@@ -91,6 +94,8 @@ class _LockLayoutState extends State<LockLayout>
       parent: _enter,
       curve: AppMotion.emphasized,
     );
+    final message = widget.message;
+    final bottom = widget.bottom;
 
     final content = ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: LockLayout.maxWidth),
@@ -108,7 +113,7 @@ class _LockLayoutState extends State<LockLayout>
           ),
           AnimatedContainer(
             duration: settle,
-            height: keyboardOpen ? AppSpacing.smd : AppSpacing.mdl,
+            height: keyboardOpen ? AppSpacing.smd : AppSpacing.md,
           ),
           Semantics(
             header: true,
@@ -118,12 +123,14 @@ class _LockLayoutState extends State<LockLayout>
               style: AppTextStyles.h2.copyWith(color: c.textPrimary),
             ),
           ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            widget.message,
-            textAlign: TextAlign.center,
-            style: AppTextStyles.bodyMedium.copyWith(color: c.textSecondary),
-          ),
+          if (message != null) ...[
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: AppTextStyles.bodyMedium.copyWith(color: c.textSecondary),
+            ),
+          ],
           AnimatedContainer(
             duration: settle,
             height: keyboardOpen ? AppSpacing.lg : AppSpacing.xl,
@@ -148,10 +155,10 @@ class _LockLayoutState extends State<LockLayout>
                 minHeight: box.maxHeight -
                     (keyboardOpen ? AppSpacing.md : AppSpacing.lg) * 2,
               ),
-              // y = 0.2 splits the free space 3:2 above and below, so the
-              // column sits a little below the middle, in thumb reach.
+              // y = -0.2 leaves 2 parts of the free space above the column
+              // and 3 below: the tile and name sit in the upper middle.
               child: Align(
-                alignment: const Alignment(0, 0.2),
+                alignment: const Alignment(0, -0.2),
                 child: AnimatedBuilder(
                   animation: entrance,
                   builder: (context, child) => Opacity(
@@ -170,65 +177,61 @@ class _LockLayoutState extends State<LockLayout>
       ),
       bottomNavigationBar: keyboardOpen
           ? null
-          : const SafeArea(
+          : SafeArea(
               top: false,
               child: Padding(
-                padding: EdgeInsets.only(bottom: AppSpacing.mdl),
-                child: Center(heightFactor: 1, child: SuiteEndorsement()),
+                padding: const EdgeInsets.only(bottom: AppSpacing.mdl),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (bottom != null) ...[
+                      bottom,
+                      const SizedBox(height: AppSpacing.xl),
+                    ],
+                    const SuiteEndorsement(),
+                  ],
+                ),
               ),
             ),
     );
   }
 }
 
-/// The fingerprint unlock: a full-width primary pill. While the system
-/// prompt is up it reads "Waiting for fingerprint…" and ignores taps, without
-/// greying out, since nothing is wrong.
-final class LockFingerprintButton extends StatelessWidget {
-  const LockFingerprintButton({
-    required this.onPressed,
-    this.waiting = false,
-    this.variant = VaultButtonVariant.primary,
-    super.key,
-  });
+/// Fingerprint unlock as a quiet round icon button (56 dp, tonal accent).
+/// The system prompt already starts on its own when the lock appears; this
+/// brings it back after the user dismissed it.
+final class LockBiometricButton extends StatelessWidget {
+  const LockBiometricButton({required this.onPressed, super.key});
 
-  final VoidCallback onPressed;
-  final bool waiting;
+  final VoidCallback? onPressed;
 
-  /// Secondary when a PIN keypad is the main control below it.
-  final VaultButtonVariant variant;
-
-  @override
-  Widget build(BuildContext context) => VaultButton(
-        label: waiting ? 'Waiting for fingerprint…' : 'Use fingerprint',
-        icon: Icons.fingerprint_rounded,
-        variant: variant,
-        onPressed: waiting ? () {} : onPressed,
-      );
-}
-
-/// A hairline "or" between the fingerprint button and the password field.
-final class LockDivider extends StatelessWidget {
-  const LockDivider({super.key});
+  static const double size = 56;
 
   @override
   Widget build(BuildContext context) {
     final c = SuiteColors.of(context);
-    final line = Expanded(child: Container(height: 1, color: c.hairline));
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-      child: Row(
-        children: [
-          line,
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.smd),
-            child: Text(
-              'or',
-              style: AppTextStyles.caption.copyWith(color: c.textTertiary),
+    return Semantics(
+      button: true,
+      label: 'Unlock with fingerprint',
+      excludeSemantics: true,
+      child: Tooltip(
+        message: 'Unlock with fingerprint',
+        child: Material(
+          color: c.accentContainer,
+          shape: const CircleBorder(),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onPressed,
+            child: SizedBox.square(
+              dimension: size,
+              child: Icon(
+                Icons.fingerprint_rounded,
+                size: 28,
+                color: c.accent,
+              ),
             ),
           ),
-          line,
-        ],
+        ),
       ),
     );
   }

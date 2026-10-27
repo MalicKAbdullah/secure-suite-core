@@ -153,45 +153,47 @@ uses exactly one hero card.
 ### Lock screen
 
 Every lock in the suite has one structure, built by `core_lock`'s
-`LockLayout`; only the app tile, name and accent differ. There is no clock,
-date, greeting or background graphic: the screen is the app's flat
-`background`.
+`LockLayout`; only the app tile, name and accent differ. The screen is the
+app's flat `background` with nothing on it but the unlock: no clock, date,
+greeting, subtitle or background graphic.
 
-One centred column (380 max width) sits a little below the middle of the
-screen (alignment y = 0.2, a 3:2 split of the free space), in thumb reach:
+One centred column (380 max width) sits a little above the middle of the
+screen (alignment y = −0.2):
 
 1. the app tile (`SuiteAppIcon`), drawn at 64;
-2. the app name in `h2`, 20 below;
-3. one short line in `bodyMedium` secondary, 4 below ("Unlock to continue");
-4. the unlock controls, 32 below, stacked 12 apart.
+2. the app name in `h2`, 16 below;
+3. the controls, 32 below, stacked 12 apart: the password field, the primary
+   Unlock button, and a quiet "Forgot password?" link (`LockTextLink`).
 
-The "by Offlyne" endorsement sits at the bottom. With the keyboard up it steps
-aside, "Forgot password?" hides, the tile shrinks to 48 and the gaps
-tighten, so the field and its button stay above the keyboard on a 360 × 640
-phone and no line is cut by the keyboard edge.
+Low on the screen, in thumb reach, sits the fingerprint button
+(`LockBiometricButton`): a 56 round tonal accent button with the fingerprint
+glyph and no label ("Unlock with fingerprint" for tooltip and screen
+readers). Below it is the small "by Offlyne" endorsement. The system
+fingerprint prompt starts by itself when the lock appears; the button brings
+it back. Without fingerprint unlock the button is absent and the field is
+focused.
 
-Controls, from the top:
+States:
 
-- **Fingerprint on:** "Use fingerprint" as the primary pill
-  (`LockFingerprintButton`; the system prompt also starts once on appear), an
-  "or" hairline (`LockDivider`), the password field, and an outlined Unlock
-  button.
-- **Fingerprint off:** the password field, focused, and a primary Unlock
-  button.
-- A quiet "Forgot password?" link (`LockTextLink`). It swaps the controls for
-  the recovery form in the same column (line: "Reset your password"): a short
-  explanation, recovery key, new password, confirm, "Reset and unlock", and
-  "Back to unlock".
+- A wrong password shakes the field (`LockShake`, still under reduced
+  motion) and shows the error under it.
+- A cooldown shows "Too many attempts. Try again in 0:28." under the field,
+  counting down each second (`formatLockCountdown`), and disables Unlock.
+- While Argon2 runs, Unlock shows a spinner.
+- With the keyboard up, the tile shrinks to 48, the gaps tighten, and the
+  link, the fingerprint button and the endorsement step aside. The field and
+  Unlock stay above the keyboard on a 360 × 640 phone, and no line is cut by
+  the keyboard edge.
 
-A wrong password shakes the field (`LockShake`, still under reduced motion)
-and shows the error under it. A cooldown shows "Too many attempts. Try again
-in 0:28." counting down each second (`formatLockCountdown`) and disables
-Unlock. While Argon2 runs, Unlock shows a spinner.
+"Forgot password?" swaps the controls for the recovery form in the same
+column, with one line under the name ("Reset your password"): a short
+explanation, recovery key, new password, confirm, "Reset and unlock", and
+"Back to unlock".
 
 `LockScreen` and `AppLockGate` take `appMark: SuiteAppIcon(app: SuiteApp.<app>,
 size: 64)`. Apps with their own unlock (a master password, a PIN keypad) build
-the same screen with `LockLayout` and these parts; a PIN keypad goes where the
-password field is, below the fingerprint button.
+the same screen with `LockLayout` and these parts; a PIN keypad takes the
+place of the field and the Unlock button.
 
 ## Native splash
 

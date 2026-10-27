@@ -10,11 +10,11 @@ import 'package:flutter/material.dart';
 
 /// Full-screen cover shown while the app is locked, laid out by [LockLayout].
 ///
-/// With fingerprint unlock on, the system prompt starts once when the screen
-/// appears and "Use fingerprint" is the primary button; the password field
-/// and an outlined Unlock button sit directly below it. Without it, the
-/// password field is focused and Unlock is the primary button.
-/// "Forgot password?" swaps the controls for the recovery-key reset.
+/// The app tile and name, the password field, the Unlock button and a quiet
+/// "Forgot password?" link, which swaps in the recovery-key reset. With
+/// fingerprint unlock on, the system prompt starts once when the screen
+/// appears and a round fingerprint button low on the screen brings it back;
+/// without it, the password field is focused.
 final class LockScreen extends StatefulWidget {
   const LockScreen({required this.controller, this.appMark, super.key});
 
@@ -34,7 +34,7 @@ class _LockScreenState extends State<LockScreen> {
   Timer? _ticker;
   Duration _cooldown = Duration.zero;
   bool _checking = false;
-  bool _waitingForFingerprint = false;
+  bool _prompting = false;
   bool _recovering = false;
   String? _error;
   int _failures = 0;
@@ -81,25 +81,18 @@ class _LockScreenState extends State<LockScreen> {
 
   Future<void> _autoPrompt() async {
     if (!_c.autoPromptArmed) return;
-    setState(() => _waitingForFingerprint = true);
+    _prompting = true;
     await _c.autoUnlock();
-    if (mounted) setState(() => _waitingForFingerprint = false);
+    _prompting = false;
   }
 
+  /// The system prompt shows its own mismatch and cancel feedback, so a
+  /// failed or dismissed prompt adds nothing here; the password stays ready.
   Future<void> _fingerprint() async {
-    if (_waitingForFingerprint || _checking) return;
-    setState(() {
-      _waitingForFingerprint = true;
-      _error = null;
-    });
-    final ok = await _c.unlockWithBiometric();
-    if (!mounted) return;
-    setState(() {
-      _waitingForFingerprint = false;
-      if (!ok) {
-        _error = "Fingerprint didn't match. Try again or use your password.";
-      }
-    });
+    if (_prompting || _checking) return;
+    _prompting = true;
+    await _c.unlockWithBiometric();
+    _prompting = false;
   }
 
   Future<void> _submitPassword() async {
@@ -166,15 +159,6 @@ class _LockScreenState extends State<LockScreen> {
               '${formatLockCountdown(_cooldown)}.'
           : _error;
       controls = [
-        if (biometric) ...[
-          LockFingerprintButton(
-            waiting: _waitingForFingerprint,
-            onPressed: _fingerprint,
-          ),
-          const SizedBox(height: LockLayout.gap),
-          const LockDivider(),
-          const SizedBox(height: LockLayout.gap),
-        ],
         LockShake(
           trigger: _failures,
           child: AppTextField(
@@ -192,9 +176,6 @@ class _LockScreenState extends State<LockScreen> {
         const SizedBox(height: LockLayout.gap),
         VaultButton(
           label: 'Unlock',
-          variant: biometric
-              ? VaultButtonVariant.secondary
-              : VaultButtonVariant.primary,
           isLoading: _checking,
           onPressed: _coolingDown ? null : _submitPassword,
         ),
@@ -213,7 +194,8 @@ class _LockScreenState extends State<LockScreen> {
     return LockLayout(
       mark: mark,
       title: _c.appName,
-      message: _recovering ? 'Reset your password' : 'Unlock to continue',
+      message: _recovering ? 'Reset your password' : null,
+      bottom: biometric ? LockBiometricButton(onPressed: _fingerprint) : null,
       children: controls,
     );
   }

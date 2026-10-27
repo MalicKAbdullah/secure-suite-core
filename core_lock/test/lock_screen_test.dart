@@ -28,17 +28,13 @@ final class _FakeStorage implements ISecureStorage {
 }
 
 final class _FakeAuth implements IDeviceAuth {
-  _FakeAuth({this.hang = false});
-
-  /// Leaves the system prompt "up" forever.
-  final bool hang;
   int prompts = 0;
   @override
   Future<bool> canAuthenticate() async => true;
   @override
   Future<bool> authenticate({required String reason}) {
     prompts++;
-    return hang ? Completer<bool>().future : Future.value(false);
+    return Future.value(false);
   }
 }
 
@@ -60,13 +56,12 @@ const _key = 'gallery_lock';
 
 LockController _controller({
   required bool biometric,
-  bool hangAuth = false,
   bool hangHash = false,
   Duration? cooldown,
   String appName = 'Budgetly',
 }) =>
     LockController(
-      deviceAuth: _FakeAuth(hang: hangAuth),
+      deviceAuth: _FakeAuth(),
       hasher: _FakeHasher(hang: hangHash),
       storage: _FakeStorage({
         '${_key}_verifier': 'h:right',
@@ -133,7 +128,7 @@ Future<void> _loadFonts() async {
 }
 
 void main() {
-  testWidgets('shows no clock or greeting, only the app and its controls', (
+  testWidgets('shows only the app, the field, Unlock and the link', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -141,10 +136,10 @@ void main() {
     );
     await tester.pump(const Duration(seconds: 1));
     expect(find.text('Budgetly'), findsOneWidget);
-    expect(find.text('Unlock to continue'), findsOneWidget);
+    expect(find.text('Unlock'), findsOneWidget);
     expect(find.text('by Offlyne'), findsOneWidget);
     expect(find.textContaining(':'), findsNothing);
-    expect(find.text('Use fingerprint'), findsNothing);
+    expect(find.byTooltip('Unlock with fingerprint'), findsNothing);
   });
 
   testWidgets('a wrong password shows the error and keeps the screen', (
@@ -199,7 +194,7 @@ void main() {
     await tester.pumpWidget(const SizedBox());
   });
 
-  testWidgets('offers the fingerprint first and prompts once on appear', (
+  testWidgets('prompts once on appear; the fingerprint button re-prompts', (
     tester,
   ) async {
     final auth = _FakeAuth();
@@ -216,9 +211,9 @@ void main() {
     await tester.pumpWidget(_app(c, Brightness.dark));
     await tester.pump(const Duration(seconds: 1));
     expect(auth.prompts, 1);
-    expect(find.text('Use fingerprint'), findsOneWidget);
+    expect(find.byTooltip('Unlock with fingerprint'), findsOneWidget);
     expect(find.byType(TextField), findsOneWidget);
-    await tester.tap(find.text('Use fingerprint'));
+    await tester.tap(find.byTooltip('Unlock with fingerprint'));
     await tester.pump();
     expect(auth.prompts, 2);
   });
@@ -238,7 +233,7 @@ void main() {
     await tester.ensureVisible(find.text('Back to unlock'));
     await tester.tap(find.text('Back to unlock'));
     await tester.pump();
-    expect(find.text('Unlock to continue'), findsOneWidget);
+    expect(find.text('Forgot password?'), findsOneWidget);
   });
 
   test('formatLockCountdown reads as a clock', () {
@@ -345,13 +340,6 @@ void main() {
         );
       });
     }
-    testWidgets('waiting for fingerprint', (t) async {
-      await shot(
-        t,
-        '03-fingerprint-waiting-light',
-        _app(_controller(biometric: true, hangAuth: true), Brightness.light),
-      );
-    });
     testWidgets('error', (t) async {
       await shot(
         t,
