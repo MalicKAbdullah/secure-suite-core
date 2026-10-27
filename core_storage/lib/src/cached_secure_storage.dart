@@ -40,6 +40,9 @@ final class CachedSecureStorage implements ISecureStorage {
 
   @override
   Future<void> delete({required String key}) async {
+    // Memory mirrors the platform (this process is the sole writer), so a key
+    // missing here is missing there too and needs no round trip.
+    if (!_values.containsKey(key)) return;
     await _inner.delete(key: key);
     _values.remove(key);
   }

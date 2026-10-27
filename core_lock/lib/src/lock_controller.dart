@@ -266,8 +266,11 @@ final class LockController extends ChangeNotifier {
     if (!_locked) return true;
     if (!_biometricEnabled || _authInFlight) return false;
     if (!await _prompt('Unlock $_appName')) return false;
-    await _resetAttempts();
+    // The home is shown before the attempt counters are cleared: on storage
+    // without a cache each delete is a platform round trip, and nothing about
+    // the unlock depends on them.
     _clearLock(UnlockMethod.biometric);
+    await _resetAttempts();
     return true;
   }
 

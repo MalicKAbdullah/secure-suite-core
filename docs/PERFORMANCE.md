@@ -91,9 +91,25 @@ above OWASP's minimum (19 MiB, 2 passes, 1 lane); they stay. The estimated
 ~1 s on a mid-range phone is the cost of a password unlock, not of opening
 the app.
 
-### Fingerprint → home estimate
+### Fingerprint → home
 
-core_lock apps (Budgetly, Ledgerly): data is already loaded under the lock, so
-home is one frame after the prompt closes (< 50 ms). Vaultly: one secure
-storage read (40–150 ms) + vault decrypt and parse (≈ 30 ms for 300 entries on
-a mid-range phone) + the route change ≈ 0.1–0.25 s.
+`LockController.unlockWithBiometric` drops the cover the moment the prompt
+succeeds and clears the failed-attempt counters afterwards; the counters are
+bookkeeping the home never waits on. `CachedSecureStorage.delete` skips the
+platform call for a key it does not hold, so clearing counters that were never
+set costs nothing.
+
+What the home does on its first unlocked frame is each app's own budget, with
+the same rules everywhere:
+
+- The whole-dataset decrypt + `jsonDecode` + model parse runs in one
+  `Isolate.run`, never on the UI isolate, and starts while the prompt is up
+  (core_lock apps load under the lock; Vaultly prefetches the ciphertext and
+  decrypts the moment the key is released).
+- Figures derived from the whole dataset (totals, charts, health scores) are
+  computed once per data change and memoised, not in `build`.
+- Long lists are lazy slivers; images decode at their display size.
+- A card whose figure arrives after the first frame shows a skeleton of its
+  final size, so nothing moves when it fills in.
+
+Measured numbers live in each app's `docs/PERFORMANCE.md`.
