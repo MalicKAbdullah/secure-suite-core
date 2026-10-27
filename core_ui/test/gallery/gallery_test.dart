@@ -2,6 +2,7 @@ import 'package:core_theme/core_theme.dart';
 import 'package:core_ui/core_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'gallery_support.dart';
 
@@ -475,6 +476,32 @@ Widget _components() => Builder(
 
 void main() {
   setUpAll(loadGalleryFonts);
+
+  testWidgets('gallery: appearance setting', (tester) async {
+    SharedPreferences.setMockInitialValues({'offlyne_theme_mode': 'dark'});
+    final appearance = await AppearanceController.load();
+    await renderBoard(
+      tester,
+      'appearance',
+      () => Padding(
+        padding: const EdgeInsets.all(AppSpacing.gutter),
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: RowGroup(
+            children: [
+              AppearanceSetting(controller: appearance),
+              const SettingsTile(
+                icon: Icons.lock_outline_rounded,
+                title: 'App lock',
+                subtitle: 'Fingerprint and password',
+              ),
+            ],
+          ),
+        ),
+      ),
+      height: 260,
+    );
+  }, skip: galleryOut == null);
 
   testWidgets(
     'gallery: home dashboard',
