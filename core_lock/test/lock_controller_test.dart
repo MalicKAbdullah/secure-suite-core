@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:core_crypto/core_crypto.dart';
 import 'package:core_lock/core_lock.dart';
 import 'package:core_storage/core_storage.dart';
@@ -6,13 +8,20 @@ import 'package:flutter_test/flutter_test.dart';
 
 final class _FakeStorage implements ISecureStorage {
   final Map<String, String> _m = {};
+
+  /// When set, deletes wait for it — a slow platform round trip.
+  Completer<void>? deleteGate;
   @override
   Future<void> write({required String key, required String value}) async =>
       _m[key] = value;
   @override
   Future<String?> read({required String key}) async => _m[key];
   @override
-  Future<void> delete({required String key}) async => _m.remove(key);
+  Future<void> delete({required String key}) async {
+    await deleteGate?.future;
+    _m.remove(key);
+  }
+
   @override
   Future<void> deleteAll() async => _m.clear();
   @override
@@ -123,6 +132,17 @@ void main() {
     expect(auth.prompts, 1);
   });
 
+  test('biometric unlock shows the app before clearing attempt counters',
+      () async {
+    final c = make(_FakeAuth(), enabled: true, biometricEnabled: true);
+    storage.deleteGate = Completer<void>();
+    final unlocking = c.unlockWithBiometric();
+    await Future<void>.delayed(Duration.zero);
+    expect(c.isLocked, isFalse);
+    storage.deleteGate!.complete();
+    expect(await unlocking, isTrue);
+  });
+
   test('autoUnlock fires biometric once, only when armed + enabled', () async {
     final auth = _FakeAuth();
     final c = make(auth, enabled: true, biometricEnabled: true);
@@ -222,8 +242,7 @@ void main() {
       expect(await c.verifyPassword('new-password'), ok);
     });
 
-    test('a wrong or malformed key is rejected and changes nothing',
-        () async {
+    test('a wrong or malformed key is rejected and changes nothing', () async {
       final c = make(_FakeAuth(), enabled: true);
       await storage.write(key: 'test_lock_verifier', value: 'h:pw');
       await storage.write(
