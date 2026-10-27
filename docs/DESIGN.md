@@ -152,17 +152,48 @@ uses exactly one hero card.
 
 ### Lock screen
 
-`core_lock`'s `LockScreen` shows the following, from the top:
+Every lock in the suite has one structure, built by `core_lock`'s
+`LockLayout`; only the app tile, name and accent differ. The screen is the
+app's flat `background` with nothing on it but the unlock: no clock, date,
+greeting, subtitle or background graphic.
 
-- the app mark and name;
-- a large live clock with a greeting and the date;
-- a prominent fingerprint target, which pulses while the system prompt is up;
-- the password field, which shakes on error, and the unlock button;
-- a quiet "Forgot password?" link, which swaps the clock and fingerprint for
-  the recovery-key form (recovery key, new password, confirm);
-- the "by Offlyne" endorsement at the bottom.
+One centred column (380 max width) sits a little above the middle of the
+screen (alignment y = −0.2):
 
-Pass `appMark: SuiteAppIcon(app: SuiteApp.<app>, size: 56)`.
+1. the app tile (`SuiteAppIcon`), drawn at 64;
+2. the app name in `h2`, 16 below;
+3. the controls, 32 below, stacked 12 apart: the password field, the primary
+   Unlock button, and a quiet "Forgot password?" link (`LockTextLink`).
+
+Low on the screen, in thumb reach, sits the fingerprint button
+(`LockBiometricButton`): a 56 round tonal accent button with the fingerprint
+glyph and no label ("Unlock with fingerprint" for tooltip and screen
+readers). Below it is the small "by Offlyne" endorsement. The system
+fingerprint prompt starts by itself when the lock appears; the button brings
+it back. Without fingerprint unlock the button is absent and the field is
+focused.
+
+States:
+
+- A wrong password shakes the field (`LockShake`, still under reduced
+  motion) and shows the error under it.
+- A cooldown shows "Too many attempts. Try again in 0:28." under the field,
+  counting down each second (`formatLockCountdown`), and disables Unlock.
+- While Argon2 runs, Unlock shows a spinner.
+- With the keyboard up, the tile shrinks to 48, the gaps tighten, and the
+  link, the fingerprint button and the endorsement step aside. The field and
+  Unlock stay above the keyboard on a 360 × 640 phone, and no line is cut by
+  the keyboard edge.
+
+"Forgot password?" swaps the controls for the recovery form in the same
+column, with one line under the name ("Reset your password"): a short
+explanation, recovery key, new password, confirm, "Reset and unlock", and
+"Back to unlock".
+
+`LockScreen` and `AppLockGate` take `appMark: SuiteAppIcon(app: SuiteApp.<app>,
+size: 64)`. Apps with their own unlock (a master password, a PIN keypad) build
+the same screen with `LockLayout` and these parts; a PIN keypad takes the
+place of the field and the Unlock button.
 
 ## Native splash
 

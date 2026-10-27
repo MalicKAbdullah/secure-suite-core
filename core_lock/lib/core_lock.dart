@@ -7,6 +7,7 @@ export 'package:core_lock/src/identity_check.dart';
 export 'package:core_lock/src/local_auth_device_auth.dart';
 export 'package:core_lock/src/lock_attempt.dart';
 export 'package:core_lock/src/lock_controller.dart';
+export 'package:core_lock/src/lock_layout.dart';
 export 'package:core_lock/src/lock_screen.dart';
 export 'package:core_lock/src/password_hasher.dart';
 export 'package:core_lock/src/recovery_key_view.dart';

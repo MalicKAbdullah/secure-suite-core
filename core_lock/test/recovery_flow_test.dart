@@ -84,7 +84,8 @@ void main() {
     await tester.enterText(fields.at(0), _key.toLowerCase());
     await tester.enterText(fields.at(1), 'brand-new');
     await tester.enterText(fields.at(2), 'brand-new');
-    await tester.tap(find.text('Reset password and unlock'));
+    await tester.ensureVisible(find.text('Reset and unlock'));
+    await tester.tap(find.text('Reset and unlock'));
     await settle(tester);
 
     expect(c.isLocked, isFalse);
@@ -102,16 +103,18 @@ void main() {
     await tester.enterText(fields.at(0), RecoveryKey.generate());
     await tester.enterText(fields.at(1), 'brand-new');
     await tester.enterText(fields.at(2), 'brand-new');
-    await tester.tap(find.text('Reset password and unlock'));
+    await tester.ensureVisible(find.text('Reset and unlock'));
+    await tester.tap(find.text('Reset and unlock'));
     await settle(tester);
 
     expect(c.isLocked, isTrue);
     expect(find.text('That recovery key is not right.'), findsOneWidget);
     expect(storage.m['t_lock_verifier'], 'h:old-password');
 
-    await tester.tap(find.text('Back to password'));
+    await tester.ensureVisible(find.text('Back to unlock'));
+    await tester.tap(find.text('Back to unlock'));
     await settle(tester);
-    expect(find.text('Unlock Budgetly'), findsOneWidget);
+    expect(find.text('Unlock'), findsOneWidget);
   });
 
   testWidgets('without a recovery key it explains there is no reset', (
@@ -119,7 +122,7 @@ void main() {
   ) async {
     await openRecovery(tester, controller());
     expect(find.textContaining('No recovery key was set up'), findsOneWidget);
-    expect(find.text('Reset password and unlock'), findsNothing);
+    expect(find.text('Reset and unlock'), findsNothing);
   });
 
   testWidgets('an unlock without a key offers one once, shown until saved', (
@@ -132,7 +135,7 @@ void main() {
     await tester.pumpWidget(app(c));
     await settle(tester);
     await tester.enterText(find.byType(TextField), 'old-password');
-    await tester.tap(find.text('Unlock Budgetly'));
+    await tester.tap(find.text('Unlock'));
     await settle(tester);
 
     expect(find.text('Set up a recovery key'), findsOneWidget);
@@ -165,7 +168,7 @@ void main() {
     await tester.pumpWidget(app(c));
     await settle(tester);
     await tester.enterText(find.byType(TextField), 'old-password');
-    await tester.tap(find.text('Unlock Budgetly'));
+    await tester.tap(find.text('Unlock'));
     await settle(tester);
     await tester.tap(find.textContaining('Not now'));
     await settle(tester);
