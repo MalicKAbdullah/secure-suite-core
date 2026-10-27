@@ -195,6 +195,29 @@ size: 64)`. Apps with their own unlock (a master password, a PIN keypad) build
 the same screen with `LockLayout` and these parts; a PIN keypad takes the
 place of the field and the Unlock button.
 
+## Appearance
+
+Every app offers System · Light · Dark under Settings → Appearance, near the
+top of Settings, and follows the system until the user chooses.
+
+- `AppearanceController` (core_theme) keeps the choice in plain shared
+  preferences, not secure storage: it is not secret and must be readable
+  before unlock and by native code. Load it before `runApp` and bind
+  `MaterialApp.themeMode` to `mode`, so the first frame, including the lock
+  screen, has the right theme.
+- `AppearanceSetting` (core_ui) is the Settings row: "Appearance" with an
+  `AppSegmentedControl` under it. The theme changes on tap.
+- Native Android code reads `FlutterSharedPreferences` →
+  `flutter.offlyne_theme_mode` (`system`, `light` or `dark`).
+
+```dart
+final appearance = await AppearanceController.load();
+runApp(ListenableBuilder(
+  listenable: appearance,
+  builder: (_, __) => MaterialApp(themeMode: appearance.mode, ...),
+));
+```
+
 ## Native splash
 
 Each app uses `flutter_native_splash` with the shared neutral background, the

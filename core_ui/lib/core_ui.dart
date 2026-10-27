@@ -4,6 +4,7 @@ export 'package:core_ui/src/brand/app_icon.dart';
 export 'package:core_ui/src/brand/suite_mark.dart';
 export 'package:core_ui/src/widgets/app_banner.dart';
 export 'package:core_ui/src/widgets/app_text_field.dart';
+export 'package:core_ui/src/widgets/appearance_setting.dart';
 export 'package:core_ui/src/widgets/app_select_field.dart';
 export 'package:core_ui/src/widgets/bottom_action_bar.dart';
 export 'package:core_ui/src/widgets/charts.dart';
