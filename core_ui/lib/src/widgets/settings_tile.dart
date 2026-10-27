@@ -39,6 +39,7 @@ final class SettingsTile extends StatelessWidget {
       showChevron: trailing == null && onTap != null && showChevron,
       onTap: onTap,
       dense: subtitle == null,
+      subtitleMaxLines: 2,
     );
   }
 }

@@ -415,6 +415,43 @@ void main() {
         textScale: 1.3,
       );
     });
+    for (final (on, b, scale) in [
+      (true, Brightness.light, 1.0),
+      (false, Brightness.dark, 1.0),
+      (true, Brightness.dark, 1.3),
+    ]) {
+      testWidgets('settings on=$on ${b.name} x$scale', (t) async {
+        await shot(
+          t,
+          '14-settings-${on ? 'on' : 'off'}-${b.name}-x$scale',
+          MaterialApp(
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.build(b, accent: AppAccents.budgetly),
+            home: Scaffold(
+              body: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.gutter),
+                  child: AppLockSettings(
+                    controller: LockController(
+                      deviceAuth: _FakeAuth(),
+                      hasher: _FakeHasher(),
+                      storage: _FakeStorage(),
+                      clock: () => _now,
+                      storageKey: _key,
+                      appName: 'DoseWise',
+                      enabled: on,
+                      biometricEnabled: on,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          size: const Size(360, 640),
+          textScale: scale,
+        );
+      });
+    }
     testWidgets('tablet', (t) async {
       await shot(
         t,

@@ -291,9 +291,8 @@ class _RecoveryFormState extends State<_RecoveryForm> {
           children: [
             Text(
               hasKey
-                  ? 'Enter the recovery key you saved when you set up the '
-                      'lock, then choose a new password. Your data stays as '
-                      'it is.'
+                  ? 'Enter the recovery key you saved, then choose a new '
+                      'password. Your data is kept.'
                   : 'No recovery key was set up for $appName, so a '
                       'forgotten password cannot be reset. Unlock with your '
                       'fingerprint, then create a recovery key in Settings.',

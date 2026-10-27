@@ -71,11 +71,17 @@ final class AppListRow extends StatelessWidget {
     this.onTap,
     this.onLongPress,
     this.dense = false,
+    this.subtitleMaxLines = 1,
     super.key,
   });
 
   final String title;
   final String? subtitle;
+
+  /// Lines the subtitle may wrap to before it is cut. One keeps data rows
+  /// (transactions, items) a fixed height; settings rows allow two so a
+  /// description is never cut off on a narrow phone or at large text.
+  final int subtitleMaxLines;
   final Widget? leading;
 
   /// Usually a `MoneyText` or a short value text.
@@ -126,7 +132,7 @@ final class AppListRow extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         subtitle!,
-                        maxLines: 1,
+                        maxLines: subtitleMaxLines,
                         overflow: TextOverflow.ellipsis,
                         style: AppTextStyles.bodySmall.copyWith(
                           color: c.textSecondary,
