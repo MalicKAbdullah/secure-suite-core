@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 /// Drop-in Settings section for the app lock — identical across every Secure
 /// Suite app. Renders the whole flow from a [LockController]:
 ///
-///  * off  → "Require a password to open" switch that opens a set-password
+///  * off  → "App lock" switch that opens a set-password
 ///    form (with an optional "use fingerprint" toggle when available), then
 ///    shows the new recovery key once;
 ///  * on   → the switch turns it off (after confirming the password), plus
@@ -194,10 +194,10 @@ class _AppLockSettingsState extends State<AppLockSettings> {
       children: [
         SettingsTile(
           icon: Icons.lock_outline_rounded,
-          title: 'Require a password to open',
+          title: 'App lock',
           subtitle: _c.isEnabled
-              ? 'Unlock with your fingerprint or password'
-              : 'Protect ${_c.appName} with a password you set',
+              ? 'Fingerprint or password to open'
+              : 'Ask for a password to open ${_c.appName}',
           trailing: Switch(
             value: _c.isEnabled,
             onChanged: (v) => v ? _turnOn() : _turnOff(),
@@ -209,8 +209,8 @@ class _AppLockSettingsState extends State<AppLockSettings> {
             icon: Icons.fingerprint_rounded,
             title: 'Use fingerprint',
             subtitle: _biometricAvailable
-                ? 'Unlock with a fingerprint instead of typing'
-                : 'Add a fingerprint on your device to enable this',
+                ? 'Unlock without typing'
+                : 'Add a fingerprint in your phone settings first',
             trailing: Switch(
               value: _c.biometricEnabled,
               onChanged:
@@ -232,8 +232,8 @@ class _AppLockSettingsState extends State<AppLockSettings> {
             icon: Icons.key_rounded,
             title: 'Recovery key',
             subtitle: switch (_hasRecoveryKey) {
-              true => 'Set · create a new one if you lost it',
-              false => 'Not set · needed if you forget your password',
+              true => 'Set · replace it if you lost it',
+              false => 'Not set · resets a forgotten password',
               null => null,
             },
             onTap: _recoveryKey,
