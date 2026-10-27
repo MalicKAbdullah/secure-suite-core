@@ -166,8 +166,9 @@ screen (alignment y = 0.2, a 3:2 split of the free space), in thumb reach:
 4. the unlock controls, 32 below, stacked 12 apart.
 
 The "by Offlyne" endorsement sits at the bottom. With the keyboard up it steps
-aside, the tile shrinks to 48 and the gaps tighten, so the field and its
-button stay above the keyboard on a 360 × 640 phone.
+aside, "Forgot password?" hides, the tile shrinks to 48 and the gaps
+tighten, so the field and its button stay above the keyboard on a 360 × 640
+phone and no line is cut by the keyboard edge.
 
 Controls, from the top:
 

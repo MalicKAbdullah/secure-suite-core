@@ -198,11 +198,15 @@ class _LockScreenState extends State<LockScreen> {
           isLoading: _checking,
           onPressed: _coolingDown ? null : _submitPassword,
         ),
-        const SizedBox(height: AppSpacing.sm),
-        LockTextLink(
-          label: 'Forgot password?',
-          onPressed: _checking ? null : _openRecovery,
-        ),
+        // Hidden while typing so it is never cut in half by the keyboard
+        // edge on small phones; it returns when the keyboard closes.
+        if (MediaQuery.viewInsetsOf(context).bottom == 0) ...[
+          const SizedBox(height: AppSpacing.sm),
+          LockTextLink(
+            label: 'Forgot password?',
+            onPressed: _checking ? null : _openRecovery,
+          ),
+        ],
       ];
     }
 
