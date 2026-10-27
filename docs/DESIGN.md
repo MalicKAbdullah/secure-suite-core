@@ -152,17 +152,45 @@ uses exactly one hero card.
 
 ### Lock screen
 
-`core_lock`'s `LockScreen` shows the following, from the top:
+Every lock in the suite has one structure, built by `core_lock`'s
+`LockLayout`; only the app tile, name and accent differ. There is no clock,
+date, greeting or background graphic: the screen is the app's flat
+`background`.
 
-- the app mark and name;
-- a large live clock with a greeting and the date;
-- a prominent fingerprint target, which pulses while the system prompt is up;
-- the password field, which shakes on error, and the unlock button;
-- a quiet "Forgot password?" link, which swaps the clock and fingerprint for
-  the recovery-key form (recovery key, new password, confirm);
-- the "by Offlyne" endorsement at the bottom.
+One centred column (380 max width) sits a little below the middle of the
+screen (alignment y = 0.2, a 3:2 split of the free space), in thumb reach:
 
-Pass `appMark: SuiteAppIcon(app: SuiteApp.<app>, size: 56)`.
+1. the app tile (`SuiteAppIcon`), drawn at 64;
+2. the app name in `h2`, 20 below;
+3. one short line in `bodyMedium` secondary, 4 below ("Unlock to continue");
+4. the unlock controls, 32 below, stacked 12 apart.
+
+The "by Offlyne" endorsement sits at the bottom. With the keyboard up it steps
+aside, the tile shrinks to 48 and the gaps tighten, so the field and its
+button stay above the keyboard on a 360 × 640 phone.
+
+Controls, from the top:
+
+- **Fingerprint on:** "Use fingerprint" as the primary pill
+  (`LockFingerprintButton`; the system prompt also starts once on appear), an
+  "or" hairline (`LockDivider`), the password field, and an outlined Unlock
+  button.
+- **Fingerprint off:** the password field, focused, and a primary Unlock
+  button.
+- A quiet "Forgot password?" link (`LockTextLink`). It swaps the controls for
+  the recovery form in the same column (line: "Reset your password"): a short
+  explanation, recovery key, new password, confirm, "Reset and unlock", and
+  "Back to unlock".
+
+A wrong password shakes the field (`LockShake`, still under reduced motion)
+and shows the error under it. A cooldown shows "Too many attempts. Try again
+in 0:28." counting down each second (`formatLockCountdown`) and disables
+Unlock. While Argon2 runs, Unlock shows a spinner.
+
+`LockScreen` and `AppLockGate` take `appMark: SuiteAppIcon(app: SuiteApp.<app>,
+size: 64)`. Apps with their own unlock (a master password, a PIN keypad) build
+the same screen with `LockLayout` and these parts; a PIN keypad goes where the
+password field is, below the fingerprint button.
 
 ## Native splash
 
