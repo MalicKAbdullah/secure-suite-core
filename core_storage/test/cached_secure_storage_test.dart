@@ -68,6 +68,12 @@ void main() {
     expect(await cached.readAll(), isEmpty);
   });
 
+  test('deleting a key that is not stored makes no platform call', () async {
+    final cached = await CachedSecureStorage.load(inner);
+    await cached.delete(key: 'missing');
+    expect(inner.platformCalls, 1);
+  });
+
   test('a failed platform write leaves memory unchanged', () async {
     final cached = await CachedSecureStorage.load(inner);
     inner.failWrites = true;
