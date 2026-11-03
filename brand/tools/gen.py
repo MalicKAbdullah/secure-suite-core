@@ -24,7 +24,19 @@ ACCENTS = {
     'ledgerly': ('Ledgerly', '4A4FE0', '9298FF'),
     'dosewise': ('DoseWise', '08805F', '3EDDA6'),
     'warden': ('Warden', '457A0C', 'A6E33C'),
+    'tessera': ('Tessera', '4F7300', 'D4FF3A'),
 }
+
+# Launcher tile and glyph colors where they differ from the default (light
+# accent tile, white glyph). Tessera's lime is too pale to carry a white glyph,
+# so its tile is the dark-mode lime with an ink glyph.
+TILES = {
+    'tessera': ('D4FF3A', '0E1116'),
+}
+
+
+def tile(key):
+    return TILES.get(key, (ACCENTS[key][1], 'FFFFFF'))
 
 
 def f(v):
@@ -170,6 +182,14 @@ def glyphs():
         ('stroke', line(10.25, 13, 13.75, 13), 'ink'),
         ('fill', circle(12, 16.75, 1.75), 'dot'),
     ]
+    # Tessera: a 2x2 mosaic with one tile not yet laid; the family dot is the
+    # next widget placed.
+    g['tessera'] = [
+        ('stroke', rrect(4, 4, 6, 6, 1.5), 'ink'),
+        ('stroke', rrect(14, 4, 6, 6, 1.5), 'ink'),
+        ('stroke', rrect(4, 14, 6, 6, 1.5), 'ink'),
+        ('fill', circle(17, 17, DOT), 'dot'),
+    ]
     return g
 
 
@@ -254,14 +274,15 @@ def svgs():
         write(os.path.join(ROOT, f'brand/mark/{name}.svg'),
               f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" '
               f'width="24" height="24">\n  {body}\n</svg>\n')
-    for key, (title, light, _dark) in ACCENTS.items():
+    for key, (title, _light, _dark) in ACCENTS.items():
+        fill, ink = tile(key)
         # Master: full 108-unit adaptive canvas, glyph at 2x centred.
-        body = '\n    '.join(svg_shapes(GLYPHS[key], '#FFFFFF', '#FFFFFF', STROKE))
+        body = '\n    '.join(svg_shapes(GLYPHS[key], f'#{ink}', f'#{ink}', STROKE))
         write(os.path.join(ROOT, f'brand/icons/{key}/{key}-icon.svg'),
               f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108" '
               f'width="1080" height="1080">\n'
               f'  <title>{title}</title>\n'
-              f'  <rect width="108" height="108" fill="#{light}"/>\n'
+              f'  <rect width="108" height="108" fill="#{fill}"/>\n'
               f'  <g transform="translate({f(OFF)} {f(OFF)}) scale({f(SCALE)})">\n    {body}\n  </g>\n'
               f'</svg>\n')
         gbody = '\n  '.join(svg_shapes(GLYPHS[key], '#0E1116', '#0E1116', STROKE))
@@ -297,16 +318,17 @@ def vector(items, color):
 
 
 def android():
-    for key, (_title, light, _dark) in ACCENTS.items():
+    for key in ACCENTS:
+        fill, ink = tile(key)
         base = os.path.join(ROOT, f'brand/icons/{key}/res')
-        write(f'{base}/drawable/ic_suite_foreground.xml', vector(GLYPHS[key], '#FFFFFFFF'))
+        write(f'{base}/drawable/ic_suite_foreground.xml', vector(GLYPHS[key], f'#FF{ink}'))
         write(f'{base}/drawable/ic_suite_monochrome.xml', vector(GLYPHS[key], '#FFFFFFFF'))
         write(f'{base}/drawable/ic_suite_background.xml',
               f'<?xml version="1.0" encoding="utf-8"?>\n'
               f'<vector {NS}\n    android:width="108dp"\n    android:height="108dp"\n'
               f'    android:viewportWidth="108"\n    android:viewportHeight="108">\n'
               f'    <path\n        android:pathData="M0 0 L108 0 L108 108 L0 108 Z"\n'
-              f'        android:fillColor="#FF{light}" />\n</vector>\n')
+              f'        android:fillColor="#FF{fill}" />\n</vector>\n')
         adaptive = (f'<?xml version="1.0" encoding="utf-8"?>\n'
                     f'<adaptive-icon {NS}>\n'
                     f'    <background android:drawable="@drawable/ic_suite_background" />\n'

@@ -10,15 +10,30 @@ enum SuiteApp {
   reflect('Reflect', Color(0xFFC81E5B), Color(0xFFFF6B9A), reflectGlyph),
   ledgerly('Ledgerly', Color(0xFF4A4FE0), Color(0xFF9298FF), ledgerlyGlyph),
   dosewise('DoseWise', Color(0xFF08805F), Color(0xFF3EDDA6), dosewiseGlyph),
-  warden('Warden', Color(0xFF457A0C), Color(0xFFA6E33C), wardenGlyph);
+  warden('Warden', Color(0xFF457A0C), Color(0xFFA6E33C), wardenGlyph),
+  tessera('Tessera', Color(0xFF4F7300), Color(0xFFD4FF3A), tesseraGlyph,
+      tile: Color(0xFFD4FF3A), tileInk: Color(0xFF0E1116));
 
   const SuiteApp(
-      this.displayName, this.accentLight, this.accentDark, this.glyph);
+    this.displayName,
+    this.accentLight,
+    this.accentDark,
+    this.glyph, {
+    Color? tile,
+    this.tileInk = const Color(0xFFFFFFFF),
+  }) : tile = tile ?? accentLight;
 
   final String displayName;
 
-  /// Accent on light surfaces, and the launcher icon's fill.
+  /// Accent on light surfaces.
   final Color accentLight;
+
+  /// The launcher icon's fill: the light accent, except where the app's
+  /// signature colour is too pale to carry a white glyph (Tessera's lime).
+  final Color tile;
+
+  /// The launcher glyph's colour on [tile].
+  final Color tileInk;
 
   /// Accent on dark surfaces.
   final Color accentDark;
@@ -29,11 +44,11 @@ enum SuiteApp {
 
 /// How a [SuiteAppIcon] is colored.
 enum SuiteIconStyle {
-  /// The launcher icon: accent fill, white glyph.
+  /// The launcher icon: [SuiteApp.tile] fill, [SuiteApp.tileInk] glyph.
   color,
 
   /// Ink fill, white glyph, the family dot in the app's dark accent. For
-  /// in-app surfaces where seven accent tiles would be loud.
+  /// in-app surfaces where a row of accent tiles would be loud.
   ink,
 
   /// Single-color glyph on a tinted tile — how Android 13 themed icons
@@ -81,9 +96,9 @@ final class SuiteAppIcon extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final (tile, glyph, dot) = switch (style) {
       SuiteIconStyle.color => (
-          fill ?? app.accentLight,
-          ink ?? const Color(0xFFFFFFFF),
-          ink ?? const Color(0xFFFFFFFF),
+          fill ?? app.tile,
+          ink ?? app.tileInk,
+          ink ?? app.tileInk,
         ),
       SuiteIconStyle.ink => (
           fill ?? const Color(0xFF0E1116),

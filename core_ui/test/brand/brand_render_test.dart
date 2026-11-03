@@ -294,7 +294,7 @@ void main() {
           ratio: 1);
       await _capture(
           tester,
-          CustomPaint(painter: _Foreground(app, const Color(0xFFFFFFFF))),
+          CustomPaint(painter: _Foreground(app, app.tileInk)),
           const Size.square(512),
           '$dir/icon-foreground-1024.png');
       await _capture(

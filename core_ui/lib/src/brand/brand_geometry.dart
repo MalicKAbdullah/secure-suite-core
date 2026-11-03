@@ -97,3 +97,16 @@ const List<BrandShape> wardenGlyph = [
       'M10.25 16.75 A1.75 1.75 0 1 1 13.75 16.75 A1.75 1.75 0 1 1 10.25 16.75 Z',
       dot: true),
 ];
+
+const List<BrandShape> tesseraGlyph = [
+  BrandShape(
+      'M5.5 4 L8.5 4 A1.5 1.5 0 0 1 10 5.5 L10 8.5 A1.5 1.5 0 0 1 8.5 10 L5.5 10 A1.5 1.5 0 0 1 4 8.5 L4 5.5 A1.5 1.5 0 0 1 5.5 4 Z',
+      stroke: true),
+  BrandShape(
+      'M15.5 4 L18.5 4 A1.5 1.5 0 0 1 20 5.5 L20 8.5 A1.5 1.5 0 0 1 18.5 10 L15.5 10 A1.5 1.5 0 0 1 14 8.5 L14 5.5 A1.5 1.5 0 0 1 15.5 4 Z',
+      stroke: true),
+  BrandShape(
+      'M5.5 14 L8.5 14 A1.5 1.5 0 0 1 10 15.5 L10 18.5 A1.5 1.5 0 0 1 8.5 20 L5.5 20 A1.5 1.5 0 0 1 4 18.5 L4 15.5 A1.5 1.5 0 0 1 5.5 14 Z',
+      stroke: true),
+  BrandShape('M15 17 A2 2 0 1 1 19 17 A2 2 0 1 1 15 17 Z', dot: true),
+];

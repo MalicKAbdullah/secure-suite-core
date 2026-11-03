@@ -129,6 +129,19 @@ abstract final class AppAccents {
     onAccentDark: AppColors.backgroundDark,
   );
 
+  /// Tessera — lime. Electric lime is too pale for text or for a fill under
+  /// white text on light surfaces, so the light accent is the deep lime ink
+  /// (5.5:1 under white, 5.2:1 on the light background) and the electric lime
+  /// is the dark accent, under dark text.
+  static const AppAccent tessera = AppAccent(
+    light: Color(0xFF4F7300),
+    dark: Color(0xFFD4FF3A),
+    containerLight: Color(0xFFF4FFCE),
+    containerDark: Color(0xFF313A1F),
+    onAccentLight: AppColors.white,
+    onAccentDark: AppColors.backgroundDark,
+  );
+
   /// Every suite accent, in brand order.
   static const List<AppAccent> all = [
     budgetly,
@@ -138,6 +151,7 @@ abstract final class AppAccents {
     ledgerly,
     dosewise,
     warden,
+    tessera,
   ];
 }
 

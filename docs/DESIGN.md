@@ -1,7 +1,7 @@
 # Offlyne design system
 
 The shared visual language of every Offlyne app (Budgetly, Vaultly, OpenLock,
-Reflect, Ledgerly, DoseWise, Warden). Tokens live in `core_theme`, components
+Reflect, Ledgerly, DoseWise, Warden, Tessera). Tokens live in `core_theme`, components
 in `core_ui`, brand assets in `brand/` (rules in [BRAND.md](BRAND.md)).
 
 ## Philosophy
@@ -52,7 +52,8 @@ always uses a true minus sign (U+2212).
 ### Per-app accents (`AppAccents.*`)
 
 The hues are spread around the cool half of the colour wheel, and none is
-orange or terracotta. White text on the light accent passes AA (≥ 4.5:1).
+orange or terracotta. White text on the light accent passes AA (≥ 4.5:1),
+and so does the background-dark text on the dark accent.
 
 | App | Accent | Light | Dark |
 |---|---|---|---|
@@ -63,6 +64,13 @@ orange or terracotta. White text on the light accent passes AA (≥ 4.5:1).
 | Ledgerly | Indigo | `#4A4FE0` | `#9298FF` |
 | DoseWise | Jade | `#08805F` | `#3EDDA6` |
 | Warden | Lime | `#457A0C` | `#A6E33C` |
+| Tessera | Electric lime | `#4F7300` | `#D4FF3A` |
+
+Tessera's identity is electric lime, which is too pale for text or for a fill
+under white text on a light surface (white on `#D4FF3A` is 1.2:1). Its light
+accent is therefore the deep lime ink `#4F7300` (5.5:1 under white text, 5.2:1
+on the light background), and the electric lime is its dark accent (16.9:1 on
+the dark background, under dark text).
 
 `AppTheme.build(brightness, accent: AppAccents.budgetly)` builds a theme.
 `AppTheme.seeded(brightness, seed)` builds one from any colour.
@@ -233,15 +241,16 @@ flutter_native_splash:
   branding_dark: assets/brand/offlyne-endorsement-white.png
   android_12:
     image: assets/icon/icon_foreground.png
-    icon_background_color: "<accent light>"   # table above
-    icon_background_color_dark: "<accent light>"
+    icon_background_color: "<tile color>"   # brand/icons/README.md
+    icon_background_color_dark: "<tile color>"
     color: "#F6F7F9"
     color_dark: "#0A0C10"
     branding: assets/brand/offlyne-endorsement.png
     branding_dark: assets/brand/offlyne-endorsement-white.png
 ```
 
-The tile colour is the app's light accent in both modes, which keeps the icon
+The tile colour is the app's launcher tile colour (`SuiteApp.tile`: the light
+accent, or `#D4FF3A` for Tessera) in both modes, which keeps the icon
 identical to the launcher icon.
 
 ## Notifications

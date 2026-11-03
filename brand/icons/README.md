@@ -1,7 +1,8 @@
 # Offlyne app icons
 
-One construction for all seven apps (see `docs/BRAND.md`): flat accent tile,
-white 2-unit-stroke glyph on the shared 24-unit grid, one family dot per glyph.
+One construction for all eight apps (see `docs/BRAND.md`): flat tile, 2-unit
+stroke glyph on the shared 24-unit grid, one family dot per glyph. The glyph is
+white on the light-accent tile, except Tessera's: ink on electric lime.
 
 ## Folder → app
 
@@ -14,6 +15,7 @@ white 2-unit-stroke glyph on the shared 24-unit grid, one family dot per glyph.
 | `ledgerly/` | `ledgerly` | `#4A4FE0` |
 | `dosewise/` | `dose_wise` | `#08805F` |
 | `warden/`   | `warden`   | `#457A0C` |
+| `tessera/`  | `tessera`  | `#D4FF3A` |
 
 ## What each folder holds
 
@@ -25,8 +27,8 @@ white 2-unit-stroke glyph on the shared 24-unit grid, one family dot per glyph.
 | `res/drawable/ic_stat_notify.xml` | Status-bar notification icon (glyph, white on transparent, 24dp) |
 | `res/mipmap-anydpi-v26/ic_launcher.xml`, `ic_launcher_round.xml` | Adaptive icon wiring the three layers |
 | `png/icon-1024.png` | Full-bleed 1024px master: iOS icon and pre-API-26 Android mipmaps |
-| `png/icon-foreground-1024.png` | Glyph on transparent, 108-unit canvas: flutter_launcher_icons foreground, Android 12 splash icon |
-| `png/icon-monochrome-1024.png` | Glyph on transparent for `adaptive_icon_monochrome` |
+| `png/icon-foreground-1024.png` | Glyph in the tile's glyph color on transparent, 108-unit canvas: flutter_launcher_icons foreground, Android 12 splash icon |
+| `png/icon-monochrome-1024.png` | White glyph on transparent for `adaptive_icon_monochrome` |
 | `png/splash-tile.png` | Rounded tile, 384px (96dp at 4x): the pre-Android-12 and iOS splash image |
 | `png/play-store-512.png` | Google Play listing icon (full bleed; Play applies the mask) |
 | `<app>-icon.svg` | Vector master of the full icon |
@@ -45,7 +47,7 @@ Paths below are relative to the app directory, e.g.
    ```yaml
    flutter_launcher_icons:
      android: true
-     ios: true            # false for openlock and warden (Android-only)
+     ios: true            # false for openlock, warden and tessera (Android-only)
      image_path: assets/icon/icon.png
      adaptive_icon_background: "#7341E6"   # the tile color from the table
      adaptive_icon_foreground: assets/icon/icon_foreground.png
