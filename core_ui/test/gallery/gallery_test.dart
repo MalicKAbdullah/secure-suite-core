@@ -519,6 +519,7 @@ void main() {
     ('vaultly', AppAccents.vaultly),
     ('reflect', AppAccents.reflect),
     ('warden', AppAccents.warden),
+    ('tessera', AppAccents.tessera),
   ]) {
     testWidgets(
       'gallery: home in $name accent',

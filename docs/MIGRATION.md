@@ -17,6 +17,7 @@ accent explicitly:
 | Ledgerly | `AppColors.indigoAccent` | `AppAccents.ledgerly` |
 | DoseWise | `AppColors.tealAccent` | `AppAccents.dosewise` |
 | Warden | `AppColors.indigoAccent` | `AppAccents.warden` |
+| Tessera | its own `Palette` | `AppAccents.tessera` |
 
 ```dart
 theme: AppTheme.build(Brightness.light, accent: AppAccents.budgetly),

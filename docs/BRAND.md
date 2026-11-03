@@ -1,7 +1,7 @@
 # Offlyne brand
 
 Offlyne is the family behind Budgetly, Vaultly, OpenLock, Reflect, Ledgerly,
-DoseWise and Warden. The name means offline, by design: every app keeps its
+DoseWise, Warden and Tessera. The name means offline, by design: every app keeps its
 data on the device. The y is deliberate.
 
 ## Architecture: endorsed brands
@@ -76,7 +76,9 @@ notifications.
 
 One accent per app, shared neutrals and semantic colors for the rest
 (`docs/DESIGN.md`). The light value fills the launcher tile; the dark value is
-the accent on dark surfaces.
+the accent on dark surfaces. Tessera is the one exception: its tile is its
+electric lime (the dark value) under an ink glyph, because the lime is the
+app's signature and is too pale to carry white.
 
 | App | Accent | Light | Dark |
 |---|---|---|---|
@@ -87,6 +89,10 @@ the accent on dark surfaces.
 | Ledgerly | Indigo | `#4A4FE0` | `#9298FF` |
 | DoseWise | Jade | `#08805F` | `#3EDDA6` |
 | Warden | Lime | `#457A0C` | `#A6E33C` |
+| Tessera | Electric lime | `#4F7300` | `#D4FF3A` |
+
+Warden and Tessera share the lime hue; Warden is no longer supported, so no
+two supported apps collide.
 
 Neutrals for brand surfaces: ink `#0E1116`, paper `#F6F7F9`, night `#0A0C10`.
 
@@ -96,9 +102,9 @@ Every icon is built the same way; only the glyph and the tile color change.
 
 - **Canvas:** Android adaptive icon, 108 units. Visible tile 72 units, safe
   zone 66 units.
-- **Tile:** flat accent fill, no gradient, no shadow, no texture. Where a
-  rounded tile is drawn by the app (in-app, splash on older systems) its
-  corner radius is 0.3x the tile size, matching the mark's proportions.
+- **Tile:** flat fill in the app's tile color, no gradient, no shadow, no
+  texture. Where a rounded tile is drawn by the app (in-app, splash on older
+  systems) its corner radius is 0.3x the tile size, matching the mark's proportions.
 - **Glyph grid:** 24 units, scaled to 44 of the 108 units and centred, which
   leaves a 14-unit keyline inside the visible tile on every side.
 - **Stroke:** 2 grid units, round caps, round joins. Glyphs are strokes;
@@ -107,8 +113,9 @@ Every icon is built the same way; only the glyph and the tile color change.
   (Vaultly 1.5, Warden 1.75, where the dot sits inside a tighter form). It is
   the meaningful point of the glyph: the budget headroom, the key's bow, the
   keyhole, the rising star, the invoice total, the tablet, what passes the
-  filter.
-- **Color:** white glyph on the accent tile. Themed (Android 13+): the
+  filter, the next widget placed.
+- **Color:** white glyph on the light-accent tile; Tessera's ink `#0E1116`
+  glyph on its lime `#D4FF3A` tile (16.4:1). Themed (Android 13+): the
   monochrome layer is the same glyph, and the system tints it.
 
 | App | Glyph |
@@ -120,6 +127,7 @@ Every icon is built the same way; only the glyph and the tile color change.
 | Ledgerly | An invoice page with line items; the dot is the total |
 | DoseWise | A capsule split at its waist; the dot is a tablet |
 | Warden | A shield with two narrowing filter bars; the dot is what gets through |
+| Tessera | A 2×2 mosaic with one tile not yet laid; the dot is the next widget placed |
 
 In-app variants (`SuiteAppIcon` `style`): `color` (launcher), `ink` (ink
 tile, white glyph, dot in the app's dark accent, for "more from Offlyne"
