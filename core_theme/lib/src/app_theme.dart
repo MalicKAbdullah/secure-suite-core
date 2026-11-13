@@ -176,10 +176,11 @@ abstract final class AppTheme {
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
+        // Enabled colours come from the variant defaults (primary/onPrimary
+        // for FilledButton, secondaryContainer for FilledButton.tonal); a
+        // colour set here would apply to both variants.
         style: FilledButton.styleFrom(
           elevation: 0,
-          backgroundColor: accentColor,
-          foregroundColor: onAccent,
           disabledBackgroundColor: surfaceAlt,
           disabledForegroundColor: textTertiary,
           textStyle: AppTextStyles.button,

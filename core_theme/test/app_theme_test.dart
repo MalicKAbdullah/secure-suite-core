@@ -44,7 +44,8 @@ void main() {
 
     Color? iconColor(WidgetTester tester) => tester
         .widget<RichText>(
-          find.descendant(of: find.byType(Icon), matching: find.byType(RichText)),
+          find.descendant(
+              of: find.byType(Icon), matching: find.byType(RichText)),
         )
         .text
         .style
@@ -86,7 +87,8 @@ void main() {
       ));
       Color? colorOf(String text) => tester
           .widget<RichText>(
-            find.descendant(of: find.text(text), matching: find.byType(RichText)),
+            find.descendant(
+                of: find.text(text), matching: find.byType(RichText)),
           )
           .text
           .style
@@ -94,6 +96,23 @@ void main() {
       expect(colorOf('Title'), titleColor);
       expect(colorOf('Subtitle'), subtitleColor);
       expect(colorOf('Subtitle'), isNot(equals(colorOf('Title'))));
+    });
+
+    testWidgets('$brightness: FilledButton is primary, .tonal stays tonal',
+        (tester) async {
+      Material materialOf(String label) => tester.widget<Material>(
+            find
+                .ancestor(of: find.text(label), matching: find.byType(Material))
+                .first,
+          );
+      await tester.pumpWidget(app(Column(children: [
+        FilledButton(onPressed: () {}, child: const Text('filled')),
+        FilledButton.tonal(onPressed: () {}, child: const Text('tonal')),
+      ])));
+      expect(materialOf('filled').color, scheme.primary);
+      expect(materialOf('filled').textStyle?.color, scheme.onPrimary);
+      expect(materialOf('tonal').color, scheme.secondaryContainer);
+      expect(materialOf('tonal').textStyle?.color, scheme.onSecondaryContainer);
     });
   }
 }
