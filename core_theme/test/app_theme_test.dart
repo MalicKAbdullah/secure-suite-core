@@ -36,5 +36,83 @@ void main() {
         expect(subtitleColor, isNot(equals(scheme.secondaryContainer)));
       },
     );
+
+    Widget app(Widget child) => MaterialApp(
+          theme: theme,
+          home: Scaffold(body: Center(child: child)),
+        );
+
+    Color? iconColor(WidgetTester tester) => tester
+        .widget<RichText>(
+          find.descendant(
+              of: find.byType(Icon), matching: find.byType(RichText)),
+        )
+        .text
+        .style
+        ?.color;
+
+    testWidgets('$brightness: filled icon buttons paint their icon onPrimary',
+        (tester) async {
+      await tester.pumpWidget(app(
+        IconButton.filled(onPressed: () {}, icon: const Icon(Icons.add)),
+      ));
+      expect(iconColor(tester), scheme.onPrimary);
+    });
+
+    testWidgets('$brightness: standard icon buttons use onSurfaceVariant',
+        (tester) async {
+      await tester.pumpWidget(app(
+        IconButton(onPressed: () {}, icon: const Icon(Icons.add)),
+      ));
+      expect(iconColor(tester), scheme.onSurfaceVariant);
+    });
+
+    testWidgets('$brightness: app bar actions use the app bar foreground',
+        (tester) async {
+      await tester.pumpWidget(MaterialApp(
+        theme: theme,
+        home: Scaffold(
+          appBar: AppBar(actions: [
+            IconButton(onPressed: () {}, icon: const Icon(Icons.add)),
+          ]),
+        ),
+      ));
+      expect(iconColor(tester), theme.appBarTheme.foregroundColor);
+    });
+
+    testWidgets('$brightness: ListTile subtitle stays quieter than its title',
+        (tester) async {
+      await tester.pumpWidget(app(
+        const ListTile(title: Text('Title'), subtitle: Text('Subtitle')),
+      ));
+      Color? colorOf(String text) => tester
+          .widget<RichText>(
+            find.descendant(
+                of: find.text(text), matching: find.byType(RichText)),
+          )
+          .text
+          .style
+          ?.color;
+      expect(colorOf('Title'), titleColor);
+      expect(colorOf('Subtitle'), subtitleColor);
+      expect(colorOf('Subtitle'), isNot(equals(colorOf('Title'))));
+    });
+
+    testWidgets('$brightness: FilledButton is primary, .tonal stays tonal',
+        (tester) async {
+      Material materialOf(String label) => tester.widget<Material>(
+            find
+                .ancestor(of: find.text(label), matching: find.byType(Material))
+                .first,
+          );
+      await tester.pumpWidget(app(Column(children: [
+        FilledButton(onPressed: () {}, child: const Text('filled')),
+        FilledButton.tonal(onPressed: () {}, child: const Text('tonal')),
+      ])));
+      expect(materialOf('filled').color, scheme.primary);
+      expect(materialOf('filled').textStyle?.color, scheme.onPrimary);
+      expect(materialOf('tonal').color, scheme.secondaryContainer);
+      expect(materialOf('tonal').textStyle?.color, scheme.onSecondaryContainer);
+    });
   }
 }

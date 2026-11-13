@@ -176,10 +176,11 @@ abstract final class AppTheme {
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
+        // Enabled colours come from the variant defaults (primary/onPrimary
+        // for FilledButton, secondaryContainer for FilledButton.tonal); a
+        // colour set here would apply to both variants.
         style: FilledButton.styleFrom(
           elevation: 0,
-          backgroundColor: accentColor,
-          foregroundColor: onAccent,
           disabledBackgroundColor: surfaceAlt,
           disabledForegroundColor: textTertiary,
           textStyle: AppTextStyles.button,
@@ -219,9 +220,11 @@ abstract final class AppTheme {
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.smd),
         ),
       ),
-      iconButtonTheme: IconButtonThemeData(
-        style: IconButton.styleFrom(foregroundColor: textPrimary),
-      ),
+      // No global iconButtonTheme: its style applies to every IconButton
+      // variant, so a foreground set there would override the role-correct
+      // defaults of IconButton.filled (onPrimary) and .filledTonal. Standard
+      // icon buttons take onSurfaceVariant; app-bar ones take appBarTheme's
+      // foreground.
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: accentColor,
         foregroundColor: onAccent,
@@ -421,7 +424,8 @@ abstract final class AppTheme {
       ),
       listTileTheme: ListTileThemeData(
         iconColor: textSecondary,
-        textColor: textPrimary,
+        // No textColor: ListTile applies it to the title and the subtitle
+        // alike, flattening the title/subtitle hierarchy set below.
         titleTextStyle: AppTextStyles.body.copyWith(
           color: textPrimary,
           fontWeight: FontWeight.w500,
